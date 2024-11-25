@@ -26,12 +26,24 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	void LockOnToTarget();
+	void LockOnToTargetLeft();
+	void LockOnToTargetRight();
 
+	bool lockedOn;
 	APlayerCharacterController* playerController;
 	UCameraComponent* playerCamera;
 
 private:
-	float radius = 500.0f;
-	
-	void FindActorsToLockOnTo();
+	float radius = 1000.0f;
+	AActor* lockedOnActor;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<AActor*> FindActorsToLockOnTo();
+	AActor* FindClosestTarget(TArray<AActor*> Actors);
+	AActor* FindClosestTargetLeft(TArray<AActor*> Actors);
+	AActor* FindClosestTargetRight(TArray<AActor*> Actors);
+	float TargetDistanceCheck(AActor* Target);
+	void OrientCamera();
+	void LookAtTarget();
 };

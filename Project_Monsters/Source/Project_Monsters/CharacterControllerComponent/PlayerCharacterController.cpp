@@ -71,6 +71,7 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
+		//Basic Movement
 		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(moveAction, ETriggerEvent::Triggered, this, &APlayerCharacterController::Move);
@@ -78,6 +79,11 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Triggered, this, &APlayerCharacterController::Sprint);
 		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Canceled, this, &APlayerCharacterController::StopSprint);
 		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Completed, this, &APlayerCharacterController::StopSprint);
+
+		//Targeting Enemies
+		EnhancedInputComponent->BindAction(lockOnAction, ETriggerEvent::Started, targetingComponent, &UTargetingComponent::LockOnToTarget);
+		EnhancedInputComponent->BindAction(lockOnActionLeft, ETriggerEvent::Started, targetingComponent, &UTargetingComponent::LockOnToTargetLeft);
+		EnhancedInputComponent->BindAction(lockOnActionRight, ETriggerEvent::Started, targetingComponent, &UTargetingComponent::LockOnToTargetRight);
 	}
 }
 
@@ -85,7 +91,7 @@ void APlayerCharacterController::Look(const FInputActionValue& value)
 {
 	FVector2D LookAxisVector = value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	if (Controller != nullptr && !targetingComponent->lockedOn)
 	{
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);

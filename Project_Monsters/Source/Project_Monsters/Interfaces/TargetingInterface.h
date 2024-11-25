@@ -17,4 +17,6 @@ class PROJECT_MONSTERS_API ITargetingInterface
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void DisplayLockedOnWidget(bool ShowWidget);
 };

@@ -2,5 +2,3 @@
 
 
 #include "TargetingInterface.h"
-
-// Add default functionality here for any ITargetingInterface functions that are not pure virtual.
