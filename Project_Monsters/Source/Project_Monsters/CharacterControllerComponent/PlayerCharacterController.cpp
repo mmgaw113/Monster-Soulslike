@@ -15,7 +15,7 @@
 #include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
 
-// Sets default values
+// Sets default Values
 APlayerCharacterController::APlayerCharacterController()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -29,7 +29,7 @@ APlayerCharacterController::APlayerCharacterController()
 	GetCharacterMovement()->bOrientRotationToMovement = true; 
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	
-	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->JumpZVelocity = 450.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
@@ -94,7 +94,7 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		//Basic Movement
-		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Started, this, &APlayerCharacterController::Jump);
 		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(moveAction, ETriggerEvent::Triggered, this, &APlayerCharacterController::Move);
 		EnhancedInputComponent->BindAction(lookAction, ETriggerEvent::Triggered, this, &APlayerCharacterController::Look);
@@ -109,9 +109,30 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 	}
 }
 
-void APlayerCharacterController::Look(const FInputActionValue& value)
+void APlayerCharacterController::Jump()
 {
-	FVector2D LookAxisVector = value.Get<FVector2D>();
+	ACharacter::Jump();
+
+	gameInstance->PlayerAttributes.CurrentStamina -= 15;
+	playerHud->SetStamina(gameInstance->PlayerAttributes.CurrentStamina, gameInstance->PlayerAttributes.MaxStamina);
+
+	if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(staminaTimerHandle);
+	}
+}
+
+void APlayerCharacterController::Landed(const FHitResult& Hit)
+{
+	if (!GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
+	{
+		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f, true);
+	}
+}
+
+void APlayerCharacterController::Look(const FInputActionValue& Value)
+{
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr && !targetingComponent->lockedOn)
 	{
@@ -120,9 +141,9 @@ void APlayerCharacterController::Look(const FInputActionValue& value)
 	}
 }
 
-void APlayerCharacterController::Move(const FInputActionValue& value)
+void APlayerCharacterController::Move(const FInputActionValue& Value)
 {
-	FVector2D MovementVector = value.Get<FVector2D>();
+	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
@@ -136,15 +157,20 @@ void APlayerCharacterController::Move(const FInputActionValue& value)
 	}
 }
 
-void APlayerCharacterController::Sprint(const FInputActionValue& value)
+void APlayerCharacterController::Sprint(const FInputActionValue& Value)
 {
-	bool Sprinting = value.Get<bool>();
+	bool Sprinting = Value.Get<bool>();
 
 	if (Sprinting && gameInstance->PlayerAttributes.CurrentStamina > 0)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 800.0f;
 		playerHud->SetStamina(gameInstance->PlayerAttributes.CurrentStamina, gameInstance->PlayerAttributes.MaxStamina);
 		Stamina(true, false);
+
+		if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
+		{
+			GetWorldTimerManager().ClearTimer(staminaTimerHandle);
+		}
 	}
 	else if (gameInstance->PlayerAttributes.CurrentStamina <= 0)
 	{
@@ -167,14 +193,15 @@ void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
 	}
 	else if (!Sprinting && !ReachedZero)
 	{
-		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.15f, true);
+		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f, true);
 	}
 }
 
 void APlayerCharacterController::RechargeStamina()
 {
-	if (gameInstance->PlayerAttributes.CurrentStamina < gameInstance->PlayerAttributes.MaxStamina)
+	if (gameInstance->PlayerAttributes.CurrentStamina <= gameInstance->PlayerAttributes.MaxStamina)
 	{
+		playerHud->SetStamina(gameInstance->PlayerAttributes.CurrentStamina, gameInstance->PlayerAttributes.MaxStamina);
 		gameInstance->PlayerAttributes.CurrentStamina += 1;	
 	}
 	else

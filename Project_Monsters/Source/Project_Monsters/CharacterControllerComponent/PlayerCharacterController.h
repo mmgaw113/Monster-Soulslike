@@ -25,6 +25,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void Jump() override; 
+	virtual void Landed(const FHitResult& Hit) override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
@@ -66,9 +68,9 @@ private:
 	UPROPERTY()
 	class UPlayerHud* playerHud;
 	
-	void Look(const FInputActionValue& value);
-	void Move(const FInputActionValue& value);
-	void Sprint(const FInputActionValue& value);
+	void Look(const FInputActionValue& Value);
+	void Move(const FInputActionValue& Value);
+	void Sprint(const FInputActionValue& Value);
 	void StopSprint();
 	void Stamina(bool Sprinting, bool ReachedZero);
 	void RechargeStamina();
