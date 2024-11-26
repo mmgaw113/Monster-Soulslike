@@ -18,6 +18,14 @@ void UPlayerHud::SetHealth(float CurrentHealth, float MaxHealth)
 	}
 }
 
+void UPlayerHud::SetHealthBuffer(float CurrentHealth, float MaxHealth)
+{
+	if (healthBarBuffer)
+	{
+		healthBarBuffer->SetPercent(CurrentHealth / MaxHealth);			
+	}
+}
+
 void UPlayerHud::SetStamina(float CurrentStamina, float MaxStamina)
 {
 	if (staminaBar)

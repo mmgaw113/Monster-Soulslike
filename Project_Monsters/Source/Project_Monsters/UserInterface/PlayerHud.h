@@ -7,9 +7,6 @@
 #include "Project_Monsters/GameInstance/TheHuntGameInstance.h"
 #include "PlayerHud.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class PROJECT_MONSTERS_API UPlayerHud : public UUserWidget
 {
@@ -18,13 +15,21 @@ class PROJECT_MONSTERS_API UPlayerHud : public UUserWidget
 	UTheHuntGameInstance* gameInstance;
 
 	virtual void NativeConstruct() override;
-
+	
+public:
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	class UProgressBar* healthBar;
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
-	class UProgressBar* staminaBar;
+	UProgressBar* healthBarBuffer;
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	UProgressBar* staminaBar;
+
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	class UCanvasPanel* healthBarCanvas;
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	UCanvasPanel* staminaBarCanvas;
 	
-public:
 	void SetHealth(float CurrentHealth, float MaxHealth);
+	void SetHealthBuffer(float CurrentHealth, float MaxHealth);
 	void SetStamina(float CurrentStamina, float MaxStamina);
 };
