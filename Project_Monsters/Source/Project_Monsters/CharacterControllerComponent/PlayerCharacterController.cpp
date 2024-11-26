@@ -2,6 +2,7 @@
 
 
 #include "PlayerCharacterController.h"
+#include "Blueprint/UserWidget.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
@@ -11,6 +12,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
 
 // Sets default values
@@ -50,6 +52,8 @@ void APlayerCharacterController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	gameInstance = Cast<UTheHuntGameInstance>(GetGameInstance());
+	
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -57,6 +61,24 @@ void APlayerCharacterController::BeginPlay()
 			Subsystem->AddMappingContext(mappingContext, 0);
 		}
 	}
+
+	if (playerHudClass)
+	{
+		playerHud = CreateWidget<UPlayerHud>(GetWorld(), playerHudClass);
+		check(playerHud);
+		playerHud->AddToPlayerScreen();
+	}
+}
+
+void APlayerCharacterController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (playerHud)
+	{
+		playerHud->RemoveFromParent();
+		playerHud = nullptr;
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void APlayerCharacterController::Tick(float DeltaTime)
@@ -118,13 +140,46 @@ void APlayerCharacterController::Sprint(const FInputActionValue& value)
 {
 	bool Sprinting = value.Get<bool>();
 
-	if (Sprinting)
+	if (Sprinting && gameInstance->PlayerAttributes.CurrentStamina > 0)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 800.0f;
+		playerHud->SetStamina(gameInstance->PlayerAttributes.CurrentStamina, gameInstance->PlayerAttributes.MaxStamina);
+		Stamina(true, false);
+	}
+	else if (gameInstance->PlayerAttributes.CurrentStamina <= 0)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+		Stamina(false, true);
 	}
 }
 
 void APlayerCharacterController::StopSprint()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+	Stamina(false, false);
 }
+
+void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
+{
+	if (Sprinting && gameInstance->PlayerAttributes.CurrentStamina > 0)
+	{
+		gameInstance->PlayerAttributes.CurrentStamina -= 1;
+	}
+	else if (!Sprinting && !ReachedZero)
+	{
+		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.15f, true);
+	}
+}
+
+void APlayerCharacterController::RechargeStamina()
+{
+	if (gameInstance->PlayerAttributes.CurrentStamina < gameInstance->PlayerAttributes.MaxStamina)
+	{
+		gameInstance->PlayerAttributes.CurrentStamina += 1;	
+	}
+	else
+	{
+		GetWorldTimerManager().ClearTimer(staminaTimerHandle);
+	}
+}
+

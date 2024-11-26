@@ -10,7 +10,12 @@ USTRUCT(Blueprintable)
 struct FPlayerAttributes
 {
 	GENERATED_BODY()
-	
+
+	int Level;
+	int CurrentHealth;
+	int MaxHealth = 300;
+	int CurrentStamina;
+	int MaxStamina = 200;
 	int Vigor;
 	int Endurance;
 	int Strength;

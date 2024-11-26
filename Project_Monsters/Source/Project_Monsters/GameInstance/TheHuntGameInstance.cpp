@@ -5,5 +5,6 @@
 
 void UTheHuntGameInstance::Init()
 {
-	
+	PlayerAttributes.CurrentHealth = PlayerAttributes.MaxHealth;
+	PlayerAttributes.CurrentStamina = PlayerAttributes.MaxStamina;
 }

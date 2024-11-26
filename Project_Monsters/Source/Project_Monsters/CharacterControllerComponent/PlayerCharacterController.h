@@ -11,6 +11,7 @@ class UTargetingComponent;
 class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
+class UTheHuntGameInstance;
 struct FInputActionValue;
 
 UCLASS()
@@ -23,12 +24,18 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
+	FTimerHandle staminaTimerHandle;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Player Stats", meta=(AllowPrivateAccess=true))
+	UTheHuntGameInstance* gameInstance;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
 	UInputMappingContext* mappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Script/EnhancedInput.InputMappingContext'/Game/PlayerController/Input/IMC_Default.IMC_Default'"));
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
@@ -53,9 +60,16 @@ private:
 	USpringArmComponent* springArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
 	UTargetingComponent* targetingComponent;
+
+	UPROPERTY(EditAnywhere, Category="Components", meta=(AllowPrivateAccess=true))
+	TSubclassOf<UUserWidget> playerHudClass;
+	UPROPERTY()
+	class UPlayerHud* playerHud;
 	
 	void Look(const FInputActionValue& value);
 	void Move(const FInputActionValue& value);
 	void Sprint(const FInputActionValue& value);
 	void StopSprint();
+	void Stamina(bool Sprinting, bool ReachedZero);
+	void RechargeStamina();
 };
