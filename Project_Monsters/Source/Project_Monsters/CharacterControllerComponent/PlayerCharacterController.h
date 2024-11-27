@@ -67,6 +67,11 @@ private:
 	TSubclassOf<UUserWidget> playerHudClass;
 	UPROPERTY()
 	class UPlayerHud* playerHud;
+
+	UPROPERTY(EditAnywhere, Category="Equipment", meta=(AllowPrivateAccess=true))
+	TSubclassOf<class AEquipment> leftHandEquipment = LoadObject<UClass>(nullptr, TEXT("/Script/Engine.Blueprint'/Game/Blueprints/Weapons/bp_HunterPistol_C.bp_HunterPistol_C'")); 
+	UPROPERTY(EditAnywhere, Category="Equipment", meta=(AllowPrivateAccess=true))
+	TSubclassOf<AEquipment> rightHandEquipment = LoadObject<UClass>(nullptr, TEXT("/Script/Engine.Blueprint'/Game/Blueprints/Weapons/bp_Sickle_C.bp_Sickle_C'")); ;
 	
 	void Look(const FInputActionValue& Value);
 	void Move(const FInputActionValue& Value);
@@ -74,4 +79,5 @@ private:
 	void StopSprint();
 	void Stamina(bool Sprinting, bool ReachedZero);
 	void RechargeStamina();
+	void AddEquipment(FName SocketName, UClass* Equipment);
 };

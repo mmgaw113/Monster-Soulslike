@@ -6,5 +6,5 @@
 AHuntersPistol::AHuntersPistol()
 {
 	mesh = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMesh");
-	mesh->SetSkeletalMesh(blunderBussMesh);
+	mesh->SetSkeletalMesh(pistolMesh);
 }

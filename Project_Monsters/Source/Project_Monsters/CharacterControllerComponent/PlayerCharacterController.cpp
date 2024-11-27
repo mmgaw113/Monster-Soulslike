@@ -6,6 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
+#include "K2Node_SpawnActorFromClass.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -14,6 +15,9 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
+#include "Project_Monsters/Equipment/Equipment.h"
+#include "Project_Monsters/Equipment/HuntersPistol.h"
+#include "Project_Monsters/Equipment/Sickle.h"
 
 // Sets default Values
 APlayerCharacterController::APlayerCharacterController()
@@ -53,6 +57,8 @@ void APlayerCharacterController::BeginPlay()
 	Super::BeginPlay();
 
 	gameInstance = Cast<UTheHuntGameInstance>(GetGameInstance());
+	AddEquipment("LeftHandSocket", leftHandEquipment->StaticClass());
+	AddEquipment("RightHandSocket", rightHandEquipment->StaticClass());
 	
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -210,3 +216,15 @@ void APlayerCharacterController::RechargeStamina()
 	}
 }
 
+void APlayerCharacterController::AddEquipment(FName SocketName, UClass* Equipment)
+{
+	FActorSpawnParameters spawnInfo;
+	FAttachmentTransformRules transformRules = FAttachmentTransformRules::SnapToTargetIncludingScale;
+	auto equipmentItem = GetWorld()->SpawnActor<AEquipment>(Equipment, GetMesh()->GetSocketLocation(SocketName),
+		GetMesh()->GetSocketRotation(SocketName), spawnInfo);
+
+	if (equipmentItem)
+	{
+		equipmentItem->AttachToComponent(GetMesh(), transformRules, SocketName);	
+	}
+}

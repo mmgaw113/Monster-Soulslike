@@ -15,6 +15,8 @@ class PROJECT_MONSTERS_API AHuntersPistol : public AEquipment
 	GENERATED_BODY()
 
 	AHuntersPistol();
-
-	USkeletalMesh* blunderBussMesh = LoadObject<USkeletalMesh>(nullptr, TEXT("/Script/Engine.SkeletalMesh'/Game/3DModels/blunderbuss/source/Blunderbuss1.Blunderbuss1'"));
+	
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USkeletalMesh* pistolMesh = LoadObject<USkeletalMesh>(nullptr, TEXT("/Script/Engine.SkeletalMesh'/Game/3DModels/hunter-pistol/source/HunterPistol.HunterPistol'"));
 };
