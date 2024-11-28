@@ -6,25 +6,20 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
-#include "K2Node_SpawnActorFromClass.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
 #include "Project_Monsters/Equipment/Equipment.h"
-#include "Project_Monsters/Equipment/HuntersPistol.h"
-#include "Project_Monsters/Equipment/Sickle.h"
 
 // Sets default Values
 APlayerCharacterController::APlayerCharacterController()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(30.f, 90.0f);
 	
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -57,8 +52,6 @@ void APlayerCharacterController::BeginPlay()
 	Super::BeginPlay();
 
 	gameInstance = Cast<UTheHuntGameInstance>(GetGameInstance());
-	AddEquipment("LeftHandSocket", leftHandEquipment->StaticClass());
-	AddEquipment("RightHandSocket", rightHandEquipment->StaticClass());
 	
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -74,6 +67,9 @@ void APlayerCharacterController::BeginPlay()
 		check(playerHud);
 		playerHud->AddToPlayerScreen();
 	}
+	
+	AddEquipment("LeftHandSocket", leftHandEquipment);
+    AddEquipment("RightHandSocket", rightHandEquipment);
 }
 
 void APlayerCharacterController::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -167,21 +163,24 @@ void APlayerCharacterController::Sprint(const FInputActionValue& Value)
 {
 	bool Sprinting = Value.Get<bool>();
 
-	if (Sprinting && gameInstance->PlayerAttributes.CurrentStamina > 0)
+	if (!GetCharacterMovement()->Velocity.IsZero())
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 800.0f;
-		playerHud->SetStamina(gameInstance->PlayerAttributes.CurrentStamina, gameInstance->PlayerAttributes.MaxStamina);
-		Stamina(true, false);
-
-		if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
+		if (Sprinting && gameInstance->PlayerAttributes.CurrentStamina > 0)
 		{
-			GetWorldTimerManager().ClearTimer(staminaTimerHandle);
+			GetCharacterMovement()->MaxWalkSpeed = 800.0f;
+			playerHud->SetStamina(gameInstance->PlayerAttributes.CurrentStamina, gameInstance->PlayerAttributes.MaxStamina);
+			Stamina(true, false);
+
+			if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
+			{
+				GetWorldTimerManager().ClearTimer(staminaTimerHandle);
+			}
 		}
-	}
-	else if (gameInstance->PlayerAttributes.CurrentStamina <= 0)
-	{
-		GetCharacterMovement()->MaxWalkSpeed = 500.0f;
-		Stamina(false, true);
+		else if (gameInstance->PlayerAttributes.CurrentStamina <= 0)
+		{
+			GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+			Stamina(false, true);
+		}	
 	}
 }
 
@@ -227,4 +226,9 @@ void APlayerCharacterController::AddEquipment(FName SocketName, UClass* Equipmen
 	{
 		equipmentItem->AttachToComponent(GetMesh(), transformRules, SocketName);	
 	}
+	else
+	{
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Equipment not found");
+	}
+	
 }
