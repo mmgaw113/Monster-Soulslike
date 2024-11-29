@@ -12,6 +12,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
+#include "AbilitySystemComponent.h"
+#include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
 #include "Project_Monsters/Equipment/Equipment.h"
 
 // Sets default Values
@@ -45,6 +47,68 @@ APlayerCharacterController::APlayerCharacterController()
 	cameraComponent->bUsePawnControlRotation = false;
 
 	targetingComponent = CreateDefaultSubobject<UTargetingComponent>("TargetingComponent");
+
+	abilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("Attribute Component"));
+	abilitySystemComponent->SetIsReplicated(true);
+	abilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
+
+	attributes = CreateDefaultSubobject<UTheHuntAttributeSet>(TEXT("Attributes"));
+}
+
+UAbilitySystemComponent* APlayerCharacterController::GetAbilitySystemComponent() const
+{
+	return abilitySystemComponent;
+}
+
+void APlayerCharacterController::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (abilitySystemComponent)
+	{
+		abilitySystemComponent->InitAbilityActorInfo(this, this);
+	}
+
+	InitializeAttributes();
+	GiveDefaultAbilities();
+}
+
+void APlayerCharacterController::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	if (abilitySystemComponent)
+	{
+		abilitySystemComponent->InitAbilityActorInfo(this, this);
+	}
+
+	InitializeAttributes();
+}
+
+void APlayerCharacterController::InitializeAttributes()
+{
+	if (abilitySystemComponent && DefaultAttributeEffect)
+	{
+		FGameplayEffectContextHandle EffectContext = abilitySystemComponent->MakeEffectContext();
+		EffectContext.AddSourceObject(this);
+		FGameplayEffectSpecHandle SpecHandle = abilitySystemComponent->MakeOutgoingSpec(DefaultAttributeEffect, 1, EffectContext);
+
+		if (SpecHandle.IsValid())
+		{
+			FActiveGameplayEffectHandle GEHandle = abilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+		}
+	}
+}
+
+void APlayerCharacterController::GiveDefaultAbilities()
+{
+	if (HasAuthority() && abilitySystemComponent)
+	{
+		for (TSubclassOf<UGameplayAbility>& StartUpAbility : defaultAbilities)
+		{
+			abilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartUpAbility.GetDefaultObject(), 1, 0));
+		}
+	}
 }
 
 void APlayerCharacterController::BeginPlay()

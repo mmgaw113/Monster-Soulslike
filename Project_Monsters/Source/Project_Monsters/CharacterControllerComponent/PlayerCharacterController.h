@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
 #include "GameFramework/Character.h"
+#include "GameplayTagContainer.h"
+#include <GameplayEffectTypes.h>
+#include "AbilitySystemInterface.h"
+#include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
 #include "PlayerCharacterController.generated.h"
 
 class UTargetingComponent;
@@ -15,13 +19,30 @@ class UTheHuntGameInstance;
 struct FInputActionValue;
 
 UCLASS()
-class PROJECT_MONSTERS_API APlayerCharacterController : public ACharacter
+class PROJECT_MONSTERS_API APlayerCharacterController : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
 	APlayerCharacterController();
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+	virtual void InitializeAttributes();
+	virtual void GiveDefaultAbilities();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
+	int MaxHealth = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
+	int MaxStamina = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attributes")
+	int MaxStat = 99;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Abilities")
+	TSubclassOf<class UGameplayEffect> DefaultAttributeEffect;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Abilities")
+	TArray<TSubclassOf<class UGameplayAbility>> defaultAbilities;
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -30,7 +51,7 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 private:
 	FTimerHandle staminaTimerHandle;
@@ -58,6 +79,10 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
 	UCameraComponent* cameraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
+	UAbilitySystemComponent* abilitySystemComponent;
+	UPROPERTY()
+	UTheHuntAttributeSet* attributes;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
 	USpringArmComponent* springArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
