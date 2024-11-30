@@ -13,6 +13,7 @@
 #include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
 #include "AbilitySystemComponent.h"
+#include "Project_Monsters/Abilities/JumpAbility.h"
 #include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
 #include "Project_Monsters/Equipment/Equipment.h"
 
@@ -53,6 +54,9 @@ APlayerCharacterController::APlayerCharacterController()
 	abilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 
 	attributes = CreateDefaultSubobject<UTheHuntAttributeSet>(TEXT("Attributes"));
+	JumpAbility = CreateDefaultSubobject<UJumpAbility>("Jump Ability");
+	
+	defaultAbilities.Add(JumpAbility->StaticClass());
 }
 
 UAbilitySystemComponent* APlayerCharacterController::GetAbilitySystemComponent() const
@@ -179,6 +183,10 @@ void APlayerCharacterController::Jump()
 {
 	ACharacter::Jump();
 
+	//FGameplayTagContainer jumpTagContainer;
+	//jumpTagContainer.AddTag(FGameplayTag::RequestGameplayTag(FName("Player.Action.Jump")));
+	//abilitySystemComponent->TryActivateAbilitiesByTag(jumpTagContainer);
+	
 	gameInstance->PlayerAttributes.CurrentStamina -= 15;
 	playerHud->SetStamina(gameInstance->PlayerAttributes.CurrentStamina, gameInstance->PlayerAttributes.MaxStamina);
 
@@ -194,6 +202,16 @@ void APlayerCharacterController::Landed(const FHitResult& Hit)
 	{
 		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f, true);
 	}
+}
+
+void APlayerCharacterController::OnJump()
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0, FColor::Cyan, TEXT("Jumped"));
+}
+
+void APlayerCharacterController::Landed()
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0, FColor::Cyan, TEXT("Landed"));
 }
 
 void APlayerCharacterController::Look(const FInputActionValue& Value)

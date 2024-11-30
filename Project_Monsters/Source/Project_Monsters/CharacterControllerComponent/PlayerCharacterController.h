@@ -8,6 +8,7 @@
 #include "GameplayTagContainer.h"
 #include <GameplayEffectTypes.h>
 #include "AbilitySystemInterface.h"
+#include "Project_Monsters/Abilities/JumpAbility.h"
 #include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
 #include "PlayerCharacterController.generated.h"
 
@@ -42,6 +43,8 @@ public:
 	TSubclassOf<class UGameplayEffect> DefaultAttributeEffect;
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Abilities")
 	TArray<TSubclassOf<class UGameplayAbility>> defaultAbilities;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Abilities")
+	UJumpAbility* JumpAbility;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -105,4 +108,10 @@ private:
 	void Stamina(bool Sprinting, bool ReachedZero);
 	void RechargeStamina();
 	void AddEquipment(FName SocketName, UClass* Equipment);
+	
+	UFUNCTION(BlueprintCallable)
+	void OnJump();
+	
+	UFUNCTION(BlueprintCallable)
+	void Landed();
 };
