@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
-#include "GameFramework/Character.h"
+#include "BaseCharacterController.h"
 #include "GameplayTagContainer.h"
 #include <GameplayEffectTypes.h>
 #include "AbilitySystemInterface.h"
@@ -20,7 +20,7 @@ class UTheHuntGameInstance;
 struct FInputActionValue;
 
 UCLASS()
-class PROJECT_MONSTERS_API APlayerCharacterController : public ACharacter, public IAbilitySystemInterface
+class PROJECT_MONSTERS_API APlayerCharacterController : public ABaseCharacterController, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
