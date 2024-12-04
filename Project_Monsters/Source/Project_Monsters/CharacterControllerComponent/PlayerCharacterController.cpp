@@ -13,7 +13,6 @@
 #include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
 #include "AbilitySystemComponent.h"
-#include "Project_Monsters/Abilities/JumpAbility.h"
 #include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
 #include "Project_Monsters/Equipment/Equipment.h"
 
@@ -47,72 +46,7 @@ APlayerCharacterController::APlayerCharacterController()
 	cameraComponent->SetupAttachment(springArmComponent, USpringArmComponent::SocketName); 
 	cameraComponent->bUsePawnControlRotation = false;
 
-	targetingComponent = CreateDefaultSubobject<UTargetingComponent>("TargetingComponent");
-
-	abilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("Attribute Component"));
-	abilitySystemComponent->SetIsReplicated(true);
-	abilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
-
-	attributes = CreateDefaultSubobject<UTheHuntAttributeSet>(TEXT("Attributes"));
-	JumpAbility = CreateDefaultSubobject<UJumpAbility>("Jump Ability");
-	
-	defaultAbilities.Add(JumpAbility->StaticClass());
-}
-
-UAbilitySystemComponent* APlayerCharacterController::GetAbilitySystemComponent() const
-{
-	return abilitySystemComponent;
-}
-
-void APlayerCharacterController::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	if (abilitySystemComponent)
-	{
-		abilitySystemComponent->InitAbilityActorInfo(this, this);
-	}
-
-	InitializeAttributes();
-	GiveDefaultAbilities();
-}
-
-void APlayerCharacterController::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-
-	if (abilitySystemComponent)
-	{
-		abilitySystemComponent->InitAbilityActorInfo(this, this);
-	}
-
-	InitializeAttributes();
-}
-
-void APlayerCharacterController::InitializeAttributes()
-{
-	if (abilitySystemComponent && DefaultAttributeEffect)
-	{
-		FGameplayEffectContextHandle EffectContext = abilitySystemComponent->MakeEffectContext();
-		EffectContext.AddSourceObject(this);
-		FGameplayEffectSpecHandle SpecHandle = abilitySystemComponent->MakeOutgoingSpec(DefaultAttributeEffect, 1, EffectContext);
-
-		if (SpecHandle.IsValid())
-		{
-			FActiveGameplayEffectHandle GEHandle = abilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-		}
-	}
-}
-
-void APlayerCharacterController::GiveDefaultAbilities()
-{
-	if (HasAuthority() && abilitySystemComponent)
-	{
-		for (TSubclassOf<UGameplayAbility>& StartUpAbility : defaultAbilities)
-		{
-			abilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartUpAbility.GetDefaultObject(), 1, 0));
-		}
-	}
+	targetingComponent = CreateDefaultSubobject<UTargetingComponent>("TargetingComponent");	
 }
 
 void APlayerCharacterController::BeginPlay()
@@ -187,8 +121,8 @@ void APlayerCharacterController::Jump()
 	//jumpTagContainer.AddTag(FGameplayTag::RequestGameplayTag(FName("Player.Action.Jump")));
 	//abilitySystemComponent->TryActivateAbilitiesByTag(jumpTagContainer);
 	
-	gameInstance->PlayerAttributes.CurrentStamina -= 15;
-	playerHud->SetStamina(gameInstance->PlayerAttributes.CurrentStamina, gameInstance->PlayerAttributes.MaxStamina);
+	stamina = attributes->Endurance.GetCurrentValue() - 15;
+	playerHud->SetStamina(stamina, attributes->MaxEndurance.GetCurrentValue());
 
 	if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 	{
@@ -247,11 +181,12 @@ void APlayerCharacterController::Sprint(const FInputActionValue& Value)
 
 	if (!GetCharacterMovement()->Velocity.IsZero())
 	{
-		if (Sprinting && gameInstance->PlayerAttributes.CurrentStamina > 0)
+		if (Sprinting && attributes->Endurance.GetCurrentValue() > 0)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 800.0f;
-			playerHud->SetStamina(gameInstance->PlayerAttributes.CurrentStamina, gameInstance->PlayerAttributes.MaxStamina);
-			Stamina(true, false);
+			FGameplayTagContainer container;
+			container.AddTag(staminaTag);
+			ActivateAbilitiesWithTag(container, true);
 
 			if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 			{
@@ -261,7 +196,6 @@ void APlayerCharacterController::Sprint(const FInputActionValue& Value)
 		else if (gameInstance->PlayerAttributes.CurrentStamina <= 0)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 500.0f;
-			Stamina(false, true);
 		}	
 	}
 }
@@ -274,9 +208,9 @@ void APlayerCharacterController::StopSprint()
 
 void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
 {
-	if (Sprinting && gameInstance->PlayerAttributes.CurrentStamina > 0)
+	if (Sprinting && attributes->Endurance.GetCurrentValue() > 0)
 	{
-		gameInstance->PlayerAttributes.CurrentStamina -= 1;
+		stamina = attributes->Endurance.GetCurrentValue() - 1;
 	}
 	else if (!Sprinting && !ReachedZero)
 	{
@@ -288,29 +222,11 @@ void APlayerCharacterController::RechargeStamina()
 {
 	if (gameInstance->PlayerAttributes.CurrentStamina <= gameInstance->PlayerAttributes.MaxStamina)
 	{
-		playerHud->SetStamina(gameInstance->PlayerAttributes.CurrentStamina, gameInstance->PlayerAttributes.MaxStamina);
-		gameInstance->PlayerAttributes.CurrentStamina += 1;	
+		playerHud->SetStamina(stamina, attributes->MaxEndurance.GetCurrentValue());
+		stamina = attributes->Endurance.GetCurrentValue() + 1;	
 	}
 	else
 	{
 		GetWorldTimerManager().ClearTimer(staminaTimerHandle);
 	}
-}
-
-void APlayerCharacterController::AddEquipment(FName SocketName, UClass* Equipment)
-{
-	FActorSpawnParameters spawnInfo;
-	FAttachmentTransformRules transformRules = FAttachmentTransformRules::SnapToTargetIncludingScale;
-	auto equipmentItem = GetWorld()->SpawnActor<AEquipment>(Equipment, GetMesh()->GetSocketLocation(SocketName),
-		GetMesh()->GetSocketRotation(SocketName), spawnInfo);
-
-	if (equipmentItem)
-	{
-		equipmentItem->AttachToComponent(GetMesh(), transformRules, SocketName);	
-	}
-	else
-	{
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Equipment not found");
-	}
-	
 }
