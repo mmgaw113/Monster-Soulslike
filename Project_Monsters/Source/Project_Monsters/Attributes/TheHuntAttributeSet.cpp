@@ -5,6 +5,7 @@
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffect.h"
 #include "GameplayEffectExtension.h"
+#include "Project_Monsters/CharacterControllerComponent/BaseCharacterController.h"
 
 UTheHuntAttributeSet::UTheHuntAttributeSet()
 {
@@ -33,13 +34,38 @@ void UTheHuntAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffec
 {
 	Super::PostGameplayEffectExecute(Data);
 
+	float deltaValue = 0;
+	AActor* targetActor = nullptr;
+	ABaseCharacterController* rpgCharacter = nullptr;
+		
+	if (Data.EvaluatedData.ModifierOp == EGameplayModOp::Additive)
+	{
+		deltaValue = Data.EvaluatedData.Magnitude;
+	}
+
+	if (Data.Target.AbilityActorInfo.IsValid() && Data.Target.AbilityActorInfo->AvatarActor.IsValid())
+	{
+		targetActor = Data.Target.AbilityActorInfo->AvatarActor.Get();
+		rpgCharacter = Cast<ABaseCharacterController>(targetActor);
+	}
+	
 	if (Data.EvaluatedData.Attribute == GetVigorAttribute())
 	{
 		SetVigor(FMath::Clamp(GetVigor(), 0.0f, GetMaxVigor()));
+		
+		if (rpgCharacter)
+		{
+			rpgCharacter->HandleHealthChange(deltaValue, targetActor);	
+		}
 	}
 
 	if (Data.EvaluatedData.Attribute == GetEnduranceAttribute())
 	{
+		if (rpgCharacter)
+		{
+			rpgCharacter->HandleStaminaChange(deltaValue, targetActor);	
+		}
+		
 		SetEndurance(FMath::Clamp(GetEndurance(), 0.0f, GetMaxEndurance()));
 	}
 

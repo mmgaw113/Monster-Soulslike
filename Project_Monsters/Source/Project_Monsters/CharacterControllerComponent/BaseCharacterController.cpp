@@ -15,6 +15,12 @@ ABaseCharacterController::ABaseCharacterController()
 
 	attributes = CreateDefaultSubobject<UTheHuntAttributeSet>(TEXT("Attributes"));
 	characterLevel = 1;
+	vigorLevel = 1;
+	enduranceLevel = 1;
+	strengthLevel = 1;
+	dexterityLevel = 1;
+	bloodLustLevel = 1;
+	arcaneLevel = 1;
 }
 
 void ABaseCharacterController::AddEquipment(FName SocketName, UClass* Equipment) const
@@ -27,10 +33,6 @@ void ABaseCharacterController::AddEquipment(FName SocketName, UClass* Equipment)
 	if (equipmentItem)
 	{
 		equipmentItem->AttachToComponent(GetMesh(), transformRules, SocketName);	
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Equipment not found");
 	}
 }
 
@@ -51,11 +53,46 @@ void ABaseCharacterController::PossessedBy(AController* NewController)
 	SetTestAbilities();
 	FGameplayEffectContextHandle effectContext = abilitySystemComponent->MakeEffectContext();
 	effectContext.AddSourceObject(this);
-	FGameplayEffectSpecHandle newHandle = abilitySystemComponent->MakeOutgoingSpec(defaultAttributeEffects, characterLevel, effectContext);
+	FGameplayEffectSpecHandle vigorHandle = abilitySystemComponent->MakeOutgoingSpec(vigorAttributeEffects, vigorLevel, effectContext);
 
-	if (newHandle.IsValid())
+	if (vigorHandle.IsValid())
 	{
-		FActiveGameplayEffectHandle activeHandle = abilitySystemComponent->ApplyGameplayEffectSpecToTarget(*newHandle.Data.Get(), abilitySystemComponent);
+		FActiveGameplayEffectHandle activeHandle = abilitySystemComponent->ApplyGameplayEffectSpecToTarget(*vigorHandle.Data.Get(), abilitySystemComponent);
+	}
+	
+	FGameplayEffectSpecHandle enduranceHandle = abilitySystemComponent->MakeOutgoingSpec(enduranceAttributeEffects, enduranceLevel, effectContext);
+
+	if (enduranceHandle.IsValid())
+	{
+		FActiveGameplayEffectHandle activeHandle = abilitySystemComponent->ApplyGameplayEffectSpecToTarget(*enduranceHandle.Data.Get(), abilitySystemComponent);
+	}
+	
+	FGameplayEffectSpecHandle strengthHandle = abilitySystemComponent->MakeOutgoingSpec(strengthAttributeEffects, strengthLevel, effectContext);
+
+	if (strengthHandle.IsValid())
+	{
+		FActiveGameplayEffectHandle activeHandle = abilitySystemComponent->ApplyGameplayEffectSpecToTarget(*strengthHandle.Data.Get(), abilitySystemComponent);
+	}
+
+	FGameplayEffectSpecHandle dexterityHandle = abilitySystemComponent->MakeOutgoingSpec(dexterityAttributeEffects, dexterityLevel, effectContext);
+
+	if (dexterityHandle.IsValid())
+	{
+		FActiveGameplayEffectHandle activeHandle = abilitySystemComponent->ApplyGameplayEffectSpecToTarget(*dexterityHandle.Data.Get(), abilitySystemComponent);
+	}
+
+	FGameplayEffectSpecHandle bloodLustHandle = abilitySystemComponent->MakeOutgoingSpec(bloodLustAttributeEffects, bloodLustLevel, effectContext);
+
+	if (bloodLustHandle.IsValid())
+	{
+		FActiveGameplayEffectHandle activeHandle = abilitySystemComponent->ApplyGameplayEffectSpecToTarget(*bloodLustHandle.Data.Get(), abilitySystemComponent);
+	}
+
+	FGameplayEffectSpecHandle arcaneHandle = abilitySystemComponent->MakeOutgoingSpec(arcaneAttributeEffects, arcaneLevel, effectContext);
+
+	if (arcaneHandle.IsValid())
+	{
+		FActiveGameplayEffectHandle activeHandle = abilitySystemComponent->ApplyGameplayEffectSpecToTarget(*arcaneHandle.Data.Get(), abilitySystemComponent);
 	}
 }
 
@@ -73,11 +110,11 @@ void ABaseCharacterController::OnRep_PlayerState()
 
 void ABaseCharacterController::InitializeAttributes()
 {
-	if (abilitySystemComponent && DefaultAttributeEffect)
+	if (abilitySystemComponent && defaultAttributeEffects)
 	{
 		FGameplayEffectContextHandle EffectContext = abilitySystemComponent->MakeEffectContext();
 		EffectContext.AddSourceObject(this);
-		FGameplayEffectSpecHandle SpecHandle = abilitySystemComponent->MakeOutgoingSpec(DefaultAttributeEffect, 1, EffectContext);
+		FGameplayEffectSpecHandle SpecHandle = abilitySystemComponent->MakeOutgoingSpec(defaultAttributeEffects, 1, EffectContext);
 
 		if (SpecHandle.IsValid())
 		{
@@ -97,8 +134,9 @@ void ABaseCharacterController::GiveDefaultAbilities()
 	}
 }
 
-int32 ABaseCharacterController::GetCharacterLevel() const
+int32 ABaseCharacterController::GetCharacterLevel()
 {
+	characterLevel = vigorLevel + enduranceLevel + strengthLevel + dexterityLevel + bloodLustLevel + arcaneLevel;
 	return characterLevel;
 }
 
@@ -266,4 +304,19 @@ void ABaseCharacterController::SetTestAbilities()
 			abilitySystemComponent->GiveAbility(FGameplayAbilitySpec(testAbility, GetCharacterLevel(), INDEX_NONE, this));
 		}
 	}
+}
+
+void ABaseCharacterController::HandleHealthChange(float DeltaValue, AActor* OtherActor)
+{
+	OnHealthChange(DeltaValue, OtherActor);
+
+	if (GetVigor() <= 0)
+	{
+		OnDeath();
+	}
+}
+
+void ABaseCharacterController::HandleStaminaChange(float DeltaValue, AActor* OtherActor)
+{
+	OnStaminaChange(DeltaValue, OtherActor);
 }

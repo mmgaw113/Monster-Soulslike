@@ -38,7 +38,6 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Player Stats", meta=(AllowPrivateAccess=true))
 	UTheHuntGameInstance* gameInstance;
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
 	UInputMappingContext* mappingContext = LoadObject<UInputMappingContext>(nullptr, TEXT("/Script/EnhancedInput.InputMappingContext'/Game/PlayerController/Input/IMC_Default.IMC_Default'"));
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
@@ -71,10 +70,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Equipment", meta=(AllowPrivateAccess=true))
 	TSubclassOf<class AEquipment> leftHandEquipment = LoadObject<UClass>(nullptr, TEXT("/Script/Engine.Blueprint'/Game/Blueprints/Weapons/bp_HunterPistol_C.bp_HunterPistol_C'")); 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Equipment", meta=(AllowPrivateAccess=true))
-	TSubclassOf<AEquipment> rightHandEquipment = LoadObject<UClass>(nullptr, TEXT("/Script/Engine.Blueprint'/Game/Blueprints/Weapons/bp_Sickle_C.bp_Sickle_C'")); ;
-
-	float stamina;
-	float health;
+	TSubclassOf<AEquipment> rightHandEquipment = LoadObject<UClass>(nullptr, TEXT("/Script/Engine.Blueprint'/Game/Blueprints/Weapons/bp_Sickle_C.bp_Sickle_C'"));
 	
 	void Look(const FInputActionValue& Value);
 	void Move(const FInputActionValue& Value);
@@ -84,11 +80,21 @@ private:
 	void RechargeStamina();
 	
 	UFUNCTION(BlueprintCallable)
+	void UpdateHealthBar() const;
+	
+	UFUNCTION(BlueprintCallable)
+	void UpdateStaminaBar() const;
+	
+	UFUNCTION(BlueprintCallable)
 	void OnJump();
 	
 	UFUNCTION(BlueprintCallable)
 	void Landed();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="GameplayTags", meta=(AllowPrivateAccess))
+	FGameplayTag jumpTag;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="GameplayTags", meta=(AllowPrivateAccess))
 	FGameplayTag staminaTag;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="GameplayTags", meta=(AllowPrivateAccess))
+	FGameplayTag rechargeTag;
 };

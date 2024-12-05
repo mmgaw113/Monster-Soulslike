@@ -116,13 +116,13 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 void APlayerCharacterController::Jump()
 {
 	ACharacter::Jump();
-
-	//FGameplayTagContainer jumpTagContainer;
-	//jumpTagContainer.AddTag(FGameplayTag::RequestGameplayTag(FName("Player.Action.Jump")));
-	//abilitySystemComponent->TryActivateAbilitiesByTag(jumpTagContainer);
 	
-	stamina = attributes->Endurance.GetCurrentValue() - 15;
-	playerHud->SetStamina(stamina, attributes->MaxEndurance.GetCurrentValue());
+	if (attributes->Endurance.GetCurrentValue() > 15.0f)
+	{
+		FGameplayTagContainer container;
+		container.AddTag(jumpTag);
+		ActivateAbilitiesWithTag(container, true);	
+	}
 
 	if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 	{
@@ -184,18 +184,17 @@ void APlayerCharacterController::Sprint(const FInputActionValue& Value)
 		if (Sprinting && attributes->Endurance.GetCurrentValue() > 0)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 800.0f;
-			FGameplayTagContainer container;
-			container.AddTag(staminaTag);
-			ActivateAbilitiesWithTag(container, true);
-
+			Stamina(true, false);
+			
 			if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 			{
 				GetWorldTimerManager().ClearTimer(staminaTimerHandle);
 			}
 		}
-		else if (gameInstance->PlayerAttributes.CurrentStamina <= 0)
+		else if (attributes->Endurance.GetCurrentValue() <= 0)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+			Stamina(false, true);
 		}	
 	}
 }
@@ -203,14 +202,16 @@ void APlayerCharacterController::Sprint(const FInputActionValue& Value)
 void APlayerCharacterController::StopSprint()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
-	Stamina(false, false);
+	Stamina(false,  false);
 }
 
 void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
 {
 	if (Sprinting && attributes->Endurance.GetCurrentValue() > 0)
 	{
-		stamina = attributes->Endurance.GetCurrentValue() - 1;
+		FGameplayTagContainer container;
+		container.AddTag(staminaTag);
+		ActivateAbilitiesWithTag(container, true);
 	}
 	else if (!Sprinting && !ReachedZero)
 	{
@@ -220,13 +221,22 @@ void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
 
 void APlayerCharacterController::RechargeStamina()
 {
-	if (gameInstance->PlayerAttributes.CurrentStamina <= gameInstance->PlayerAttributes.MaxStamina)
-	{
-		playerHud->SetStamina(stamina, attributes->MaxEndurance.GetCurrentValue());
-		stamina = attributes->Endurance.GetCurrentValue() + 1;	
-	}
-	else
+	FGameplayTagContainer container;
+	container.AddTag(rechargeTag);
+	ActivateAbilitiesWithTag(container, true);
+	
+	if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle) && attributes->GetEndurance() == attributes->GetMaxEndurance())
 	{
 		GetWorldTimerManager().ClearTimer(staminaTimerHandle);
 	}
+}
+
+void APlayerCharacterController::UpdateHealthBar() const
+{
+	playerHud->SetHealth(attributes->Vigor.GetCurrentValue(), attributes->MaxVigor.GetCurrentValue());
+}
+
+void APlayerCharacterController::UpdateStaminaBar() const
+{
+	playerHud->SetStamina(attributes->Endurance.GetCurrentValue(), attributes->MaxEndurance.GetCurrentValue());
 }

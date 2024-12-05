@@ -23,9 +23,18 @@ public:
 	virtual void OnRep_PlayerState() override;
 	virtual void InitializeAttributes();
 	virtual void GiveDefaultAbilities();
+	// Attribute Functions
+	virtual void HandleHealthChange(float DeltaValue, AActor* OtherActor);
+	virtual void HandleStaminaChange(float DeltaValue, AActor* OtherActor);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnHealthChange(float DeltaValue, AActor* OtherActor);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStaminaChange(float DeltaValue, AActor* OtherActor);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnDeath();
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
-	virtual int32 GetCharacterLevel() const;
+	virtual int32 GetCharacterLevel();
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetVigor() const;
 	UFUNCTION(BlueprintCallable, Category="Attributes")
@@ -57,22 +66,45 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	bool ActivateAbilitiesWithTag(FGameplayTagContainer AbilityTags, bool AllowRemoteActivation = true);
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Abilities")
-	TSubclassOf<class UGameplayEffect> DefaultAttributeEffect;
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Abilities")
 	TArray<TSubclassOf<class UGameplayAbility>> defaultAbilities;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
 	UAbilitySystemComponent* abilitySystemComponent;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UTheHuntAttributeSet* attributes;
 
 protected:
-	UPROPERTY(EditAnywhere, Category="Attributes")
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Attributes")
 	int32 characterLevel;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
+	int32 vigorLevel;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
+	int32 enduranceLevel;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
+	int32 strengthLevel;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
+	int32 dexterityLevel;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
+	int32 bloodLustLevel;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
+	int32 arcaneLevel;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
 	TSubclassOf<class UGameplayEffect> defaultAttributeEffects;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
+	TSubclassOf<class UGameplayEffect> vigorAttributeEffects;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
+	TSubclassOf<class UGameplayEffect> enduranceAttributeEffects;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
+	TSubclassOf<class UGameplayEffect> strengthAttributeEffects;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
+	TSubclassOf<class UGameplayEffect> dexterityAttributeEffects;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
+	TSubclassOf<class UGameplayEffect> bloodLustAttributeEffects;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
+	TSubclassOf<class UGameplayEffect> arcaneAttributeEffects;
+	
 
 	virtual void SetTestAbilities();
 };
