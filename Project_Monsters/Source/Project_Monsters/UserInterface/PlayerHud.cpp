@@ -10,7 +10,7 @@ void UPlayerHud::NativeConstruct()
 	gameInstance = Cast<UTheHuntGameInstance>(GetGameInstance());
 }
 
-void UPlayerHud::SetHealth(float CurrentHealth, float MaxHealth)
+void UPlayerHud::SetHealth(int32 CurrentHealth, int32 MaxHealth)
 {
 	if (healthBar)
 	{
@@ -18,7 +18,7 @@ void UPlayerHud::SetHealth(float CurrentHealth, float MaxHealth)
 	}
 }
 
-void UPlayerHud::SetHealthBuffer(float CurrentHealth, float MaxHealth)
+void UPlayerHud::SetHealthBuffer(int32 CurrentHealth, int32 MaxHealth)
 {
 	if (healthBarBuffer)
 	{
@@ -26,7 +26,7 @@ void UPlayerHud::SetHealthBuffer(float CurrentHealth, float MaxHealth)
 	}
 }
 
-void UPlayerHud::SetStamina(float CurrentStamina, float MaxStamina)
+void UPlayerHud::SetStamina(int32 CurrentStamina, int32 MaxStamina)
 {
 	if (staminaBar)
 	{

@@ -54,6 +54,7 @@ void APlayerCharacterController::BeginPlay()
 	Super::BeginPlay();
 
 	gameInstance = Cast<UTheHuntGameInstance>(GetGameInstance());
+	health = GetMaxHealth();
 	
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -233,7 +234,7 @@ void APlayerCharacterController::RechargeStamina()
 
 void APlayerCharacterController::UpdateHealthBar() const
 {
-	playerHud->SetHealth(attributes->Vigor.GetCurrentValue(), attributes->MaxVigor.GetCurrentValue());
+	playerHud->SetHealth(health, GetMaxHealth());
 }
 
 void APlayerCharacterController::UpdateStaminaBar() const

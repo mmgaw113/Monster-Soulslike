@@ -55,7 +55,7 @@ void UTheHuntAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffec
 		
 		if (rpgCharacter)
 		{
-			rpgCharacter->HandleHealthChange(deltaValue, targetActor);	
+			rpgCharacter->HandleHealthChange(deltaValue, targetActor);
 		}
 	}
 

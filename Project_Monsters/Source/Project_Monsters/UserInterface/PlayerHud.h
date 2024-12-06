@@ -29,7 +29,7 @@ public:
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	UCanvasPanel* staminaBarCanvas;
 	
-	void SetHealth(float CurrentHealth, float MaxHealth);
-	void SetHealthBuffer(float CurrentHealth, float MaxHealth);
-	void SetStamina(float CurrentStamina, float MaxStamina);
+	void SetHealth(int32 CurrentHealth, int32 MaxHealth);
+	void SetHealthBuffer(int32 CurrentHealth, int32 MaxHealth);
+	void SetStamina(int32 CurrentStamina, int32 MaxStamina);
 };

@@ -90,7 +90,7 @@ void ABaseCharacterController::PossessedBy(AController* NewController)
 
 	FGameplayEffectSpecHandle arcaneHandle = abilitySystemComponent->MakeOutgoingSpec(arcaneAttributeEffects, arcaneLevel, effectContext);
 
-	if (arcaneHandle.IsValid())
+	if (bloodLustHandle.IsValid())
 	{
 		FActiveGameplayEffectHandle activeHandle = abilitySystemComponent->ApplyGameplayEffectSpecToTarget(*arcaneHandle.Data.Get(), abilitySystemComponent);
 	}
@@ -158,6 +158,45 @@ int32 ABaseCharacterController::GetMaxVigor() const
 	}
 
 	return attributes->GetMaxVigor();
+}
+
+int32 ABaseCharacterController::GetHealth() const
+{	
+	return health;
+}
+
+int32 ABaseCharacterController::GetMaxHealth() const
+{
+	if (!attributes)
+	{
+		return 0;
+	}
+	
+	if (vigorLevel <= 25)
+	{
+		float charLevel = vigorLevel - 1;
+		float resultHealth = FMath::Pow(charLevel / 24, 1.5);
+		return 300 + 500 * resultHealth;
+	}
+	else if (vigorLevel <= 40 && vigorLevel > 25)
+	{
+		float charLevel = vigorLevel - 25;
+		float resultHealth = FMath::Pow(charLevel / 15, 1.1);
+		GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Health");
+		return 800 + 650 * resultHealth;
+	}
+	else if (vigorLevel <= 60 && vigorLevel > 40)
+	{
+		float charLevel = vigorLevel - 40;
+		float resultHealth = 1 - (1 - FMath::Pow(charLevel / 20, 1.2));
+		return 1450 + 450 * resultHealth;
+	}
+	else
+	{
+		float charLevel = vigorLevel - 60;
+		float resultHealth = 1- (1 - FMath::Pow(charLevel / 39, 1.2));
+		return 1900 + 200 * resultHealth;
+	}
 }
 
 int32 ABaseCharacterController::GetEndurance() const
@@ -306,17 +345,23 @@ void ABaseCharacterController::SetTestAbilities()
 	}
 }
 
-void ABaseCharacterController::HandleHealthChange(float DeltaValue, AActor* OtherActor)
+void ABaseCharacterController::HandleHealthChange(int32 DeltaValue, AActor* OtherActor)
 {
-	OnHealthChange(DeltaValue, OtherActor);
-
-	if (GetVigor() <= 0)
+	if (health != 0)
 	{
-		OnDeath();
+		OnHealthChange(DeltaValue, OtherActor);
+
+		if (health <= 0)
+		{
+			OnDeath();
+		}	
 	}
 }
 
-void ABaseCharacterController::HandleStaminaChange(float DeltaValue, AActor* OtherActor)
+void ABaseCharacterController::HandleStaminaChange(int32 DeltaValue, AActor* OtherActor)
 {
-	OnStaminaChange(DeltaValue, OtherActor);
+	if (stamina != 0)
+	{
+		OnStaminaChange(DeltaValue, OtherActor);	
+	}
 }

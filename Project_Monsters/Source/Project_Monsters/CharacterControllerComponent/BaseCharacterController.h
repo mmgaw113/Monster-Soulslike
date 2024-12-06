@@ -24,12 +24,12 @@ public:
 	virtual void InitializeAttributes();
 	virtual void GiveDefaultAbilities();
 	// Attribute Functions
-	virtual void HandleHealthChange(float DeltaValue, AActor* OtherActor);
-	virtual void HandleStaminaChange(float DeltaValue, AActor* OtherActor);
+	virtual void HandleHealthChange(int32 DeltaValue, AActor* OtherActor);
+	virtual void HandleStaminaChange(int32 DeltaValue, AActor* OtherActor);
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnHealthChange(float DeltaValue, AActor* OtherActor);
+	void OnHealthChange(int32 DeltaValue, AActor* OtherActor);
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnStaminaChange(float DeltaValue, AActor* OtherActor);
+	void OnStaminaChange(int32 DeltaValue, AActor* OtherActor);
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeath();
 
@@ -40,9 +40,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetMaxVigor() const;
 	UFUNCTION(BlueprintCallable, Category="Attributes")
+	virtual int32 GetHealth() const;
+	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetEndurance() const;
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetMaxEndurance() const;
+	UFUNCTION(BlueprintCallable, Category="Attributes")
+	virtual int32 GetMaxHealth() const;
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetStrength() const;
 	UFUNCTION(BlueprintCallable, Category="Attributes")
@@ -89,13 +93,21 @@ protected:
 	int32 bloodLustLevel;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
 	int32 arcaneLevel;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
+	int32 health;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
+	int32 stamina;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
 	TSubclassOf<class UGameplayEffect> defaultAttributeEffects;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
 	TSubclassOf<class UGameplayEffect> vigorAttributeEffects;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
+	TSubclassOf<class UGameplayEffect> healthAttributeEffects;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
 	TSubclassOf<class UGameplayEffect> enduranceAttributeEffects;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
+	TSubclassOf<class UGameplayEffect> staminaAttributeEffects;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
 	TSubclassOf<class UGameplayEffect> strengthAttributeEffects;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
