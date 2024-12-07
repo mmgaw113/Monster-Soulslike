@@ -31,5 +31,5 @@ public:
 	
 	void SetHealth(int32 CurrentHealth, int32 MaxHealth);
 	void SetHealthBuffer(int32 CurrentHealth, int32 MaxHealth);
-	void SetStamina(int32 CurrentStamina, int32 MaxStamina);
+	void SetStamina(float CurrentStamina, float MaxStamina);
 };

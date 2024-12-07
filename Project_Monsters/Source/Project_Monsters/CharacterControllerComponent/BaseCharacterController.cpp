@@ -160,45 +160,6 @@ int32 ABaseCharacterController::GetMaxVigor() const
 	return attributes->GetMaxVigor();
 }
 
-int32 ABaseCharacterController::GetHealth() const
-{	
-	return health;
-}
-
-int32 ABaseCharacterController::GetMaxHealth() const
-{
-	if (!attributes)
-	{
-		return 0;
-	}
-	
-	if (vigorLevel <= 25)
-	{
-		float charLevel = vigorLevel - 1;
-		float resultHealth = FMath::Pow(charLevel / 24, 1.5);
-		return 300 + 500 * resultHealth;
-	}
-	else if (vigorLevel <= 40 && vigorLevel > 25)
-	{
-		float charLevel = vigorLevel - 25;
-		float resultHealth = FMath::Pow(charLevel / 15, 1.1);
-		GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Health");
-		return 800 + 650 * resultHealth;
-	}
-	else if (vigorLevel <= 60 && vigorLevel > 40)
-	{
-		float charLevel = vigorLevel - 40;
-		float resultHealth = 1 - (1 - FMath::Pow(charLevel / 20, 1.2));
-		return 1450 + 450 * resultHealth;
-	}
-	else
-	{
-		float charLevel = vigorLevel - 60;
-		float resultHealth = 1- (1 - FMath::Pow(charLevel / 39, 1.2));
-		return 1900 + 200 * resultHealth;
-	}
-}
-
 int32 ABaseCharacterController::GetEndurance() const
 {
 	if (!attributes)
@@ -319,6 +280,62 @@ int32 ABaseCharacterController::GetMaxBloodVials() const
 	return attributes->GetMaxBloodVials();
 }
 
+int32 ABaseCharacterController::CalculateMaxHealth(int Vigor) const
+{
+	if (Vigor <= 25)
+	{
+		float charLevel = Vigor - 1;
+		float resultHealth = FMath::Pow(charLevel / 24, 1.5);
+		return 300 + 500 * resultHealth;
+	}
+	else if (Vigor <= 40 && Vigor > 25)
+	{
+		float charLevel = Vigor - 25;
+		float resultHealth = FMath::Pow(charLevel / 15, 1.1);
+		return 800 + 650 * resultHealth;
+	}
+	else if (Vigor <= 60 && Vigor > 40)
+	{
+		float charLevel = Vigor - 40;
+		float resultHealth = 1 - (1 - FMath::Pow(charLevel / 20, 1.2));
+		return 1450 + 450 * resultHealth;
+	}
+	else
+	{
+		float charLevel = Vigor - 60;
+		float resultHealth = 1- (1 - FMath::Pow(charLevel / 39, 1.2));
+		return 1900 + 200 * resultHealth;
+	}
+}
+
+int32 ABaseCharacterController::CalculateMaxStamina(int Endurance) const
+{
+	if (Endurance <= 15)
+	{
+		float charLevel = Endurance - 1;
+		float resultHealth = charLevel / 14;
+		return 80 + 25 * resultHealth;
+	}
+	else if (Endurance <= 35 && Endurance > 16)
+	{
+		float charLevel = Endurance - 15;
+		float resultHealth = charLevel / 15;
+		return 105 + 25 * resultHealth;
+	}
+	else if (Endurance <= 36 && Endurance > 60)
+	{
+		float charLevel = Endurance - 30;
+		float resultHealth = charLevel / 20;
+		return 130 + 25 * resultHealth;
+	}
+	else
+	{
+		float charLevel = Endurance - 50;
+		float resultHealth = charLevel / 49;
+		return 155 + 15 * resultHealth;
+	}
+}
+
 bool ABaseCharacterController::ActivateAbilitiesWithTag(FGameplayTagContainer AbilityTags, bool AllowRemoteActivation)
 {
 	if (!abilitySystemComponent)
@@ -347,21 +364,15 @@ void ABaseCharacterController::SetTestAbilities()
 
 void ABaseCharacterController::HandleHealthChange(int32 DeltaValue, AActor* OtherActor)
 {
-	if (health != 0)
-	{
-		OnHealthChange(DeltaValue, OtherActor);
+	OnHealthChange(DeltaValue, OtherActor);
 
-		if (health <= 0)
-		{
-			OnDeath();
-		}	
-	}
+	if (health <= 0)
+	{
+		OnDeath();
+	}	
 }
 
-void ABaseCharacterController::HandleStaminaChange(int32 DeltaValue, AActor* OtherActor)
+void ABaseCharacterController::HandleStaminaChange(float DeltaValue, AActor* OtherActor)
 {
-	if (stamina != 0)
-	{
-		OnStaminaChange(DeltaValue, OtherActor);	
-	}
+		OnStaminaChange(DeltaValue, OtherActor);
 }

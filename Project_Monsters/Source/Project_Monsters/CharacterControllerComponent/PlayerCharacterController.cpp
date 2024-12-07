@@ -54,7 +54,11 @@ void APlayerCharacterController::BeginPlay()
 	Super::BeginPlay();
 
 	gameInstance = Cast<UTheHuntGameInstance>(GetGameInstance());
-	health = GetMaxHealth();
+
+	health = CalculateMaxHealth(vigorLevel);
+	maxHealth = CalculateMaxHealth(vigorLevel);
+	stamina = CalculateMaxStamina(enduranceLevel);
+	maxStamina = CalculateMaxStamina(enduranceLevel);
 	
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -118,11 +122,9 @@ void APlayerCharacterController::Jump()
 {
 	ACharacter::Jump();
 	
-	if (attributes->Endurance.GetCurrentValue() > 15.0f)
+	if (stamina > 15.0f)
 	{
-		FGameplayTagContainer container;
-		container.AddTag(jumpTag);
-		ActivateAbilitiesWithTag(container, true);	
+		stamina -= 15.0f;
 	}
 
 	if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
@@ -182,7 +184,7 @@ void APlayerCharacterController::Sprint(const FInputActionValue& Value)
 
 	if (!GetCharacterMovement()->Velocity.IsZero())
 	{
-		if (Sprinting && attributes->Endurance.GetCurrentValue() > 0)
+		if (Sprinting && stamina > 0)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 800.0f;
 			Stamina(true, false);
@@ -192,7 +194,7 @@ void APlayerCharacterController::Sprint(const FInputActionValue& Value)
 				GetWorldTimerManager().ClearTimer(staminaTimerHandle);
 			}
 		}
-		else if (attributes->Endurance.GetCurrentValue() <= 0)
+		else if (stamina <= 0)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 			Stamina(false, true);
@@ -208,11 +210,10 @@ void APlayerCharacterController::StopSprint()
 
 void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
 {
-	if (Sprinting && attributes->Endurance.GetCurrentValue() > 0)
+	if (Sprinting && stamina > 0)
 	{
-		FGameplayTagContainer container;
-		container.AddTag(staminaTag);
-		ActivateAbilitiesWithTag(container, true);
+		HandleStaminaChange(0, nullptr);
+		stamina -= 1.0f;
 	}
 	else if (!Sprinting && !ReachedZero)
 	{
@@ -222,11 +223,12 @@ void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
 
 void APlayerCharacterController::RechargeStamina()
 {
-	FGameplayTagContainer container;
-	container.AddTag(rechargeTag);
-	ActivateAbilitiesWithTag(container, true);
-	
-	if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle) && attributes->GetEndurance() == attributes->GetMaxEndurance())
+	if (stamina <= maxStamina)
+	{
+		HandleStaminaChange(0, nullptr);
+		stamina += 0.35f;
+	}
+	else
 	{
 		GetWorldTimerManager().ClearTimer(staminaTimerHandle);
 	}
@@ -234,10 +236,10 @@ void APlayerCharacterController::RechargeStamina()
 
 void APlayerCharacterController::UpdateHealthBar() const
 {
-	playerHud->SetHealth(health, GetMaxHealth());
+	playerHud->SetHealth(health, maxHealth);
 }
 
 void APlayerCharacterController::UpdateStaminaBar() const
 {
-	playerHud->SetStamina(attributes->Endurance.GetCurrentValue(), attributes->MaxEndurance.GetCurrentValue());
+	playerHud->SetStamina(stamina, maxStamina);
 }

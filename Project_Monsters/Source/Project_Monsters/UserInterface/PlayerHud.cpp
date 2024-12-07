@@ -26,7 +26,7 @@ void UPlayerHud::SetHealthBuffer(int32 CurrentHealth, int32 MaxHealth)
 	}
 }
 
-void UPlayerHud::SetStamina(int32 CurrentStamina, int32 MaxStamina)
+void UPlayerHud::SetStamina(float CurrentStamina, float MaxStamina)
 {
 	if (staminaBar)
 	{

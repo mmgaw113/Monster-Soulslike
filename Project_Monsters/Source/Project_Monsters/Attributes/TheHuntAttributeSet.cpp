@@ -33,42 +33,19 @@ void UTheHuntAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void UTheHuntAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
+	
 
-	float deltaValue = 0;
-	AActor* targetActor = nullptr;
-	ABaseCharacterController* rpgCharacter = nullptr;
-		
-	if (Data.EvaluatedData.ModifierOp == EGameplayModOp::Additive)
-	{
-		deltaValue = Data.EvaluatedData.Magnitude;
-	}
-
-	if (Data.Target.AbilityActorInfo.IsValid() && Data.Target.AbilityActorInfo->AvatarActor.IsValid())
-	{
-		targetActor = Data.Target.AbilityActorInfo->AvatarActor.Get();
-		rpgCharacter = Cast<ABaseCharacterController>(targetActor);
-	}
 	
 	if (Data.EvaluatedData.Attribute == GetVigorAttribute())
 	{
-		SetVigor(FMath::Clamp(GetVigor(), 0.0f, GetMaxVigor()));
-		
-		if (rpgCharacter)
-		{
-			rpgCharacter->HandleHealthChange(deltaValue, targetActor);
-		}
+		SetVigor(FMath::Clamp(GetVigor(), 0.0f, 99.0f));
 	}
-
+	
 	if (Data.EvaluatedData.Attribute == GetEnduranceAttribute())
 	{
-		if (rpgCharacter)
-		{
-			rpgCharacter->HandleStaminaChange(deltaValue, targetActor);	
-		}
-		
-		SetEndurance(FMath::Clamp(GetEndurance(), 0.0f, GetMaxEndurance()));
+		SetEndurance(FMath::Clamp(GetEndurance(), 0.0f, 99.0f));
 	}
-
+	
 	if (Data.EvaluatedData.Attribute == GetStrengthAttribute())
 	{
 		SetStrength(FMath::Clamp(GetStrength(), 0.0f, GetMaxStrength()));
@@ -103,12 +80,12 @@ void UTheHuntAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribut
 	{
 		AdjustAttrbuteForMaxChange(Vigor, MaxVigor, NewValue, GetVigorAttribute());
 	}
-
+	
 	if (Attribute == GetMaxEnduranceAttribute())
 	{
 		AdjustAttrbuteForMaxChange(Endurance, MaxEndurance, NewValue, GetEnduranceAttribute());
 	}
-
+	
 	if (Attribute == GetMaxStrengthAttribute())
 	{
 		AdjustAttrbuteForMaxChange(Strength, MaxStrength, NewValue, GetStrengthAttribute());

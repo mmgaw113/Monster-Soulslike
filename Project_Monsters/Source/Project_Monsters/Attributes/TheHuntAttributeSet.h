@@ -47,7 +47,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, MaxEndurance);
 	UFUNCTION()
 	virtual void OnRep_MaxEndurance(const FGameplayAttributeData& OldMaxEndurance);
-
+	
 	UPROPERTY(BlueprintReadOnly, Category="Attributes", ReplicatedUsing = OnRep_Strength)
 	FGameplayAttributeData Strength;
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, Strength);
