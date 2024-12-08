@@ -29,6 +29,7 @@ protected:
 	virtual void Landed(const FHitResult& Hit) override;
 
 public:
+	void CreateLevelUpScreen();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
@@ -36,6 +37,10 @@ public:
 	TSubclassOf<UUserWidget> playerHudClass;
 	UPROPERTY()
 	class UPlayerHud* playerHud;
+	UPROPERTY(EditAnywhere, Category="Components", meta=(AllowPrivateAccess=true))
+	TSubclassOf<UUserWidget> levelUpScreenClass;
+	UPROPERTY()
+	class UUserWidget* levelUpScreen;
 
 private:
 	FTimerHandle staminaTimerHandle;
@@ -47,17 +52,22 @@ private:
 		nullptr,
 		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/PlayerController/Input/IMC_Default.IMC_Default'"));
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
+	UInputAction* interactAction = LoadObject<UInputAction>(
+		nullptr,
+		TEXT("/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_Interact.IA_Interact'"));
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
 	UInputAction* jumpAction = LoadObject<UInputAction>(
-		nullptr, TEXT("/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_JumpAction.IA_JumpAction'"));
+		nullptr, TEXT(
+			"/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_JumpAction.IA_JumpAction'"));
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
 	UInputAction* lookAction = LoadObject<UInputAction>(
 		nullptr, TEXT("/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_Look.IA_Look'"));
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
 	UInputAction* lockOnAction = LoadObject<UInputAction>(
 		nullptr, TEXT("/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_LockOn.IA_LockOn'"));;
-	UInputAction* lockOnActionController= LoadObject<UInputAction>(
-			nullptr, TEXT(
-				"/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_NextTargetController.IA_NextTargetController'"));
+	UInputAction* lockOnActionController = LoadObject<UInputAction>(
+		nullptr, TEXT(
+			"/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_NextTargetController.IA_NextTargetController'"));
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
 	UInputAction* lockOnActionLeft = LoadObject<UInputAction>(
 		nullptr, TEXT(
@@ -86,10 +96,10 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Equipment", meta=(AllowPrivateAccess=true))
 	TSubclassOf<AEquipment> rightHandEquipment = LoadObject<UClass>(
 		nullptr, TEXT("/Script/Engine.Blueprint'/Game/Blueprints/Weapons/bp_Sickle_C.bp_Sickle_C'"));
-	
+
 	void Look(const FInputActionValue& Value);
 	void Move(const FInputActionValue& Value);
-	UFUNCTION(BlueprintCallable)
+	void Interact();
 	void Jumped(const FInputActionValue& Value);
 	void Sprint(const FInputActionValue& Value);
 	void StopSprint();

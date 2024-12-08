@@ -16,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
 #include "Project_Monsters/Equipment/Equipment.h"
+#include "Project_Monsters/Interfaces/InteractableInterface.h"
 
 // Sets default Values
 APlayerCharacterController::APlayerCharacterController()
@@ -105,7 +106,7 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		//Basic Movement
+		// Basic Movement
 		EnhancedInputComponent->BindAction(moveAction, ETriggerEvent::Triggered, this,
 		                                   &APlayerCharacterController::Move);
 		EnhancedInputComponent->BindAction(lookAction, ETriggerEvent::Triggered, this,
@@ -121,7 +122,11 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Canceled, this, &ACharacter::StopJumping);
 
-		//Targeting Enemies
+		// Interact
+		EnhancedInputComponent->BindAction(interactAction, ETriggerEvent::Started, this,
+		                                   &APlayerCharacterController::Interact);
+
+		// Targeting Enemies
 		EnhancedInputComponent->BindAction(lockOnAction, ETriggerEvent::Started, targetingComponent,
 		                                   &UTargetingComponent::LockOnToTarget);
 		EnhancedInputComponent->BindAction(lockOnActionLeft, ETriggerEvent::Started, targetingComponent,
@@ -151,6 +156,18 @@ void APlayerCharacterController::Landed(const FHitResult& Hit)
 	{
 		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
 		                                true);
+	}
+}
+
+void APlayerCharacterController::CreateLevelUpScreen()
+{
+	if (levelUpScreenClass)
+	{
+		levelUpScreen = CreateWidget<UUserWidget>(GetWorld(), levelUpScreenClass);
+		check(levelUpScreen);
+		levelUpScreen->AddToPlayerScreen();
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetShowMouseCursor(true);
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetInputMode(FInputModeGameAndUI());
 	}
 }
 
@@ -188,6 +205,22 @@ void APlayerCharacterController::Move(const FInputActionValue& Value)
 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+void APlayerCharacterController::Interact()
+{
+	TArray<AActor*> OverLappingActors;
+	GetOverlappingActors(OverLappingActors);
+
+	for (auto OverLappingActor : OverLappingActors)
+	{
+		if (OverLappingActor->GetClass()->ImplementsInterface(UInteractableInterface::StaticClass()))
+		{
+			IInteractableInterface::Execute_Interact(OverLappingActor);
+		}
+
+		break;
 	}
 }
 

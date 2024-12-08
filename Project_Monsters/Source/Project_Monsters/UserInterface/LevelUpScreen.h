@@ -68,6 +68,8 @@ public:
 	UButton* DecreaseArcane;
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	UButton* Submit;
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	UButton* Close;
 
 	// Set Functions
 	void SetVigor();
@@ -103,4 +105,6 @@ public:
 
 	UFUNCTION()
 	void OnSubmit();
+	UFUNCTION()
+	void OnClose();
 };
