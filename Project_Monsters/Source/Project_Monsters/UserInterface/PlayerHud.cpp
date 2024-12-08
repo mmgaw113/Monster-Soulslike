@@ -36,18 +36,3 @@ void UPlayerHud::SetStamina(float CurrentStamina, float MaxStamina)
 		staminaBar->SetPercent(CurrentStamina / MaxStamina);
 	}
 }
-
-void UPlayerHud::SetHealthBarSize()
-{
-	if (auto character = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
-	{
-		if (healthBarCanvas)
-		{
-			healthBarCanvas->GetDesiredSize().Set(healthBarCanvas->GetDesiredSize().X, character->CalculateMaxHealth(character->vigorLevel));
-		}
-	}
-}
-
-void UPlayerHud::SetStaminaBarSize(float NewValue)
-{
-}

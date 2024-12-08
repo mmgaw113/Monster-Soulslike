@@ -32,6 +32,4 @@ public:
 	void SetHealth(int32 CurrentHealth, int32 MaxHealth);
 	void SetHealthBuffer(int32 CurrentHealth, int32 MaxHealth);
 	void SetStamina(float CurrentStamina, float MaxStamina);
-	void SetHealthBarSize();
-	void SetStaminaBarSize(float NewValue);
 };

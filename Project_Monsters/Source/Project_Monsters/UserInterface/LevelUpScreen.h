@@ -78,15 +78,22 @@ public:
 	void SetArcane();
 	void SetHealth();
 	void SetStamina();
-	void SetCharacterLevel();
 
 	UFUNCTION()
+	void SetCharacterLevel();
+	UFUNCTION()
 	void AdjustVigorUp();
+	UFUNCTION()
 	void AdjustEnduranceUp();
+	UFUNCTION()
 	void AdjustStrengthUp();
+	UFUNCTION()
 	void AdjustDexterityUp();
+	UFUNCTION()
 	void AdjustBloodLustUp();
+	UFUNCTION()
 	void AdjustArcaneUp();
+	
 	void AdjustVigorDown();
 	void AdjustEnduranceDown();
 	void AdjustStrengthDown();

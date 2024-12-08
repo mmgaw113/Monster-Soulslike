@@ -27,8 +27,39 @@ void ULevelUpScreen::NativeConstruct()
 	if (IncreaseVigor)
 	{
 		IncreaseVigor->OnClicked.AddDynamic(this, &ULevelUpScreen::AdjustVigorUp);
+		IncreaseVigor->OnClicked.AddDynamic(this, &ULevelUpScreen::SetCharacterLevel);
 	}
 
+	if (IncreaseEndurance)
+	{
+		IncreaseEndurance->OnClicked.AddDynamic(this, &ULevelUpScreen::AdjustEnduranceUp);
+		IncreaseEndurance->OnClicked.AddDynamic(this, &ULevelUpScreen::SetCharacterLevel);
+	}
+
+	if (IncreaseStrength)
+	{
+		IncreaseStrength->OnClicked.AddDynamic(this, &ULevelUpScreen::AdjustStrengthUp);
+		IncreaseStrength->OnClicked.AddDynamic(this, &ULevelUpScreen::SetCharacterLevel);
+	}
+
+	if (IncreaseDexterity)
+	{
+		IncreaseDexterity->OnClicked.AddDynamic(this, &ULevelUpScreen::AdjustDexterityUp);
+		IncreaseDexterity->OnClicked.AddDynamic(this, &ULevelUpScreen::SetCharacterLevel);
+	}
+
+	if (IncreaseBloodLust)
+	{
+		IncreaseBloodLust->OnClicked.AddDynamic(this, &ULevelUpScreen::AdjustBloodLustUp);
+		IncreaseBloodLust->OnClicked.AddDynamic(this, &ULevelUpScreen::SetCharacterLevel);
+	}
+
+	if (IncreaseArcane)
+	{
+		IncreaseArcane->OnClicked.AddDynamic(this, &ULevelUpScreen::AdjustArcaneUp);
+		IncreaseArcane->OnClicked.AddDynamic(this, &ULevelUpScreen::SetCharacterLevel);
+	}
+	
 	if (Submit)
 	{
 		Submit->OnClicked.AddDynamic(this, &ULevelUpScreen::OnSubmit);
@@ -37,6 +68,7 @@ void ULevelUpScreen::NativeConstruct()
 
 void ULevelUpScreen::SetVigor()
 {
+	
 	if (auto character = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
 	{
 		Vigor->SetText(FText::FromString("Vigor: " + FString::FromInt(character->vigorLevel)));
@@ -95,7 +127,7 @@ void ULevelUpScreen::SetStamina()
 {
 	if (auto character = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
 	{
-		Stamina->SetText(FText::FromString("Stamina: " + FString::FromInt(character->CalculateMaxStamina(character->attributes->Endurance.GetCurrentValue()))));
+		Stamina->SetText(FText::FromString("Stamina: " + FString::FromInt(character->CalculateMaxStamina(character->enduranceLevel))));
 	}
 }
 
@@ -111,35 +143,68 @@ void ULevelUpScreen::AdjustVigorUp()
 {
 	if (auto character = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
 	{
-		Vigor->SetText(FText::FromString("Vigor: " + FString::FromInt(character->vigorLevel += 1)));
-		SetHealth();
-		character->playerHud->SetHealthBarSize();
+		if (character->vigorLevel < 99)
+		{
+			Vigor->SetText(FText::FromString("Vigor: " + FString::FromInt(character->vigorLevel += 1)));
+			SetHealth();	
+		}
 	}
 }
 
 void ULevelUpScreen::AdjustEnduranceUp()
 {
-	
+	if (auto character = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+	{
+		if (character->enduranceLevel < 99)
+		{
+			Endurance->SetText(FText::FromString("Endurance: " + FString::FromInt(character->enduranceLevel += 1)));
+			SetStamina();	
+		}
+	}
 }
 
 void ULevelUpScreen::AdjustStrengthUp()
 {
-	
+	if (auto character = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+	{
+		if (character->strengthLevel < 99)
+		{
+			Strength->SetText(FText::FromString("Strength: " + FString::FromInt(character->strengthLevel += 1)));
+		}
+	}
 }
 
 void ULevelUpScreen::AdjustDexterityUp()
 {
-	
+	if (auto character = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+	{
+		if (character->dexterityLevel < 99)
+		{
+			Dexterity->SetText(FText::FromString("Dexterity: " + FString::FromInt(character->dexterityLevel += 1)));
+		}
+	}
 }
 
 void ULevelUpScreen::AdjustBloodLustUp()
 {
-	
+	if (auto character = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+	{
+		if (character->bloodLustLevel < 99)
+		{
+			BloodLust->SetText(FText::FromString("Blood Lust: " + FString::FromInt(character->bloodLustLevel += 1)));
+		}
+	}
 }
 
 void ULevelUpScreen::AdjustArcaneUp()
 {
-	
+	if (auto character = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
+	{
+		if (character->arcaneLevel < 99)
+		{
+			Arcane->SetText(FText::FromString("Arcane: " + FString::FromInt(character->arcaneLevel += 1)));
+		}
+	}
 }
 
 void ULevelUpScreen::AdjustVigorDown()
@@ -179,5 +244,11 @@ void ULevelUpScreen::OnSubmit()
 		character->SetAttributeValues();
 		character->maxHealth = character->CalculateMaxHealth(character->vigorLevel);
 		character->health =	character->maxHealth;
+		character->maxStamina = character->CalculateMaxStamina(character->enduranceLevel);
+		character->stamina = character->maxStamina;
+		character->GetCharacterLevel();
+		this->RemoveFromParent();
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetInputMode(FInputModeGameOnly());
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetShowMouseCursor(false);
 	}
 }

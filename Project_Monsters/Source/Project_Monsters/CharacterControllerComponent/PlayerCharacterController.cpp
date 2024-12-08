@@ -13,6 +13,7 @@
 #include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
 #include "AbilitySystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
 #include "Project_Monsters/Equipment/Equipment.h"
 
@@ -53,6 +54,8 @@ void APlayerCharacterController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetInputMode(FInputModeGameOnly());
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetShowMouseCursor(false);
 	gameInstance = Cast<UTheHuntGameInstance>(GetGameInstance());
 
 	health = CalculateMaxHealth(vigorLevel);
@@ -119,17 +122,16 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 }
 
 void APlayerCharacterController::Jump()
-{
-	ACharacter::Jump();
-	
+{	
 	if (stamina > 15.0f)
 	{
 		stamina -= 15.0f;
-	}
+		ACharacter::Jump();
 
-	if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
-	{
-		GetWorldTimerManager().ClearTimer(staminaTimerHandle);
+		if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
+		{
+			GetWorldTimerManager().ClearTimer(staminaTimerHandle);
+		}
 	}
 }
 
@@ -143,7 +145,7 @@ void APlayerCharacterController::Landed(const FHitResult& Hit)
 
 void APlayerCharacterController::OnJump()
 {
-	GEngine->AddOnScreenDebugMessage(1, 3.0, FColor::Cyan, TEXT("Jumped"));
+	UpdateStaminaBar();
 }
 
 void APlayerCharacterController::Landed()

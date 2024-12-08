@@ -4,6 +4,7 @@
 #include "BaseCharacterController.h"
 #include "GameplayAbilitySpec.h"
 #include "GameplayEffectTypes.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Project_Monsters/Abilities/TheHuntAbilitySystemComponent.h"
 #include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
 #include "Project_Monsters/Equipment/Equipment.h"
@@ -287,58 +288,66 @@ int32 ABaseCharacterController::GetMaxBloodVials() const
 
 int32 ABaseCharacterController::CalculateMaxHealth(int Vigor) const
 {
-	if (Vigor <= 25)
+	if (UKismetMathLibrary::InRange_IntInt(Vigor, 1, 25))
 	{
 		float charLevel = Vigor - 1;
 		float resultHealth = FMath::Pow(charLevel / 24, 1.5);
 		return 300 + 500 * resultHealth;
 	}
-	else if (Vigor <= 40 && Vigor > 25)
+	else if (UKismetMathLibrary::InRange_IntInt(Vigor, 25, 40))
 	{
 		float charLevel = Vigor - 25;
 		float resultHealth = FMath::Pow(charLevel / 15, 1.1);
 		return 800 + 650 * resultHealth;
 	}
-	else if (Vigor <= 60 && Vigor > 40)
+	else if (UKismetMathLibrary::InRange_IntInt(Vigor, 40, 60))
 	{
 		float charLevel = Vigor - 40;
 		float resultHealth = 1 - (1 - FMath::Pow(charLevel / 20, 1.2));
 		return 1450 + 450 * resultHealth;
 	}
-	else
+	else if ((UKismetMathLibrary::InRange_IntInt(Vigor, 60, 99)))
 	{
 		float charLevel = Vigor - 60;
 		float resultHealth = 1- (1 - FMath::Pow(charLevel / 39, 1.2));
 		return 1900 + 200 * resultHealth;
 	}
+
+	float charLevel = 99 - 60;
+	float resultHealth = 1- (1 - FMath::Pow(charLevel / 39, 1.2));
+	return 1900 + 200 * resultHealth;
 }
 
 int32 ABaseCharacterController::CalculateMaxStamina(int Endurance) const
 {
-	if (Endurance <= 15)
+	if (UKismetMathLibrary::InRange_IntInt(Endurance, 1, 15))
 	{
 		float charLevel = Endurance - 1;
-		float resultHealth = charLevel / 14;
-		return 80 + 25 * resultHealth;
+		float resultStamina = charLevel / 14;
+		return 80 + 25 * resultStamina;
 	}
-	else if (Endurance <= 35 && Endurance > 16)
+	else if (UKismetMathLibrary::InRange_IntInt(Endurance, 16, 35))
 	{
 		float charLevel = Endurance - 15;
-		float resultHealth = charLevel / 15;
-		return 105 + 25 * resultHealth;
+		float resultStamina = charLevel / 15;
+		return 105 + 25 * resultStamina;
 	}
-	else if (Endurance <= 36 && Endurance > 60)
+	else if (UKismetMathLibrary::InRange_IntInt(Endurance, 36, 60))
 	{
 		float charLevel = Endurance - 30;
-		float resultHealth = charLevel / 20;
-		return 130 + 25 * resultHealth;
+		float resultStamina = charLevel / 20;
+		return 120 + 25 * resultStamina;
 	}
-	else
+	else if (UKismetMathLibrary::InRange_IntInt(Endurance, 61, 99))
 	{
 		float charLevel = Endurance - 50;
-		float resultHealth = charLevel / 49;
-		return 155 + 15 * resultHealth;
+		float resultStamina = charLevel / 49;
+		return 155 + 15 * resultStamina;
 	}
+
+	float charLevel = 99 - 50;
+	float resultStamina = charLevel / 49;
+	return 155 + 15 * resultStamina;
 }
 
 bool ABaseCharacterController::ActivateAbilitiesWithTag(FGameplayTagContainer AbilityTags, bool AllowRemoteActivation)
