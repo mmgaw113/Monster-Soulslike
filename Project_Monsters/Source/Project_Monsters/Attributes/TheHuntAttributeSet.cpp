@@ -48,27 +48,27 @@ void UTheHuntAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffec
 	
 	if (Data.EvaluatedData.Attribute == GetStrengthAttribute())
 	{
-		SetStrength(FMath::Clamp(GetStrength(), 0.0f, GetMaxStrength()));
+		SetStrength(FMath::Clamp(GetStrength(), 0.0f, 99.0f));
 	}
 
 	if (Data.EvaluatedData.Attribute == GetDexterityAttribute())
 	{
-		SetDexterity(FMath::Clamp(GetDexterity(), 0.0f, GetMaxDexterity()));
+		SetDexterity(FMath::Clamp(GetDexterity(), 0.0f, 99.0f));
 	}
 
 	if (Data.EvaluatedData.Attribute == GetBloodLustAttribute())
 	{
-		SetBloodLust(FMath::Clamp(GetBloodLust(), 0.0f, GetMaxBloodLust()));
+		SetBloodLust(FMath::Clamp(GetBloodLust(), 0.0f, 99.0f));
 	}
 
 	if (Data.EvaluatedData.Attribute == GetArcaneAttribute())
 	{
-		SetArcane(FMath::Clamp(GetArcane(), 0.0f, GetMaxArcane()));
+		SetArcane(FMath::Clamp(GetArcane(), 0.0f, 99.0f));
 	}
 
 	if (Data.EvaluatedData.Attribute == GetBloodVialsAttribute())
 	{
-		SetBloodVials(FMath::Clamp(GetBloodVials(), 0.0f, GetMaxBloodVials()));
+		SetBloodVials(FMath::Clamp(GetBloodVials(), 0.0f, 99.0f));
 	}
 }
 

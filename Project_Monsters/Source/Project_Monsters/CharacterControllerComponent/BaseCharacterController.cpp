@@ -51,6 +51,23 @@ void ABaseCharacterController::PossessedBy(AController* NewController)
 	}
 
 	SetTestAbilities();
+	SetAttributeValues();
+}
+
+void ABaseCharacterController::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	if (abilitySystemComponent)
+	{
+		abilitySystemComponent->InitAbilityActorInfo(this, this);
+	}
+
+	InitializeAttributes();
+}
+
+void ABaseCharacterController::SetAttributeValues()
+{
 	FGameplayEffectContextHandle effectContext = abilitySystemComponent->MakeEffectContext();
 	effectContext.AddSourceObject(this);
 	FGameplayEffectSpecHandle vigorHandle = abilitySystemComponent->MakeOutgoingSpec(vigorAttributeEffects, vigorLevel, effectContext);
@@ -94,18 +111,6 @@ void ABaseCharacterController::PossessedBy(AController* NewController)
 	{
 		FActiveGameplayEffectHandle activeHandle = abilitySystemComponent->ApplyGameplayEffectSpecToTarget(*arcaneHandle.Data.Get(), abilitySystemComponent);
 	}
-}
-
-void ABaseCharacterController::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-
-	if (abilitySystemComponent)
-	{
-		abilitySystemComponent->InitAbilityActorInfo(this, this);
-	}
-
-	InitializeAttributes();
 }
 
 void ABaseCharacterController::InitializeAttributes()

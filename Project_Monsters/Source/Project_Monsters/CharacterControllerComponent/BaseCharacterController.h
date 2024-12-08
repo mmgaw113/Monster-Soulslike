@@ -21,6 +21,7 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
+	void SetAttributeValues();
 	virtual void InitializeAttributes();
 	virtual void GiveDefaultAbilities();
 	// Attribute Functions
@@ -76,8 +77,7 @@ public:
 	UAbilitySystemComponent* abilitySystemComponent;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UTheHuntAttributeSet* attributes;
-
-protected:
+	
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Attributes")
 	int32 characterLevel;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
@@ -101,6 +101,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
 	float maxStamina;
 
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
 	TSubclassOf<class UGameplayEffect> defaultAttributeEffects;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")

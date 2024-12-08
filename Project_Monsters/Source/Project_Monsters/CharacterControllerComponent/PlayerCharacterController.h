@@ -33,6 +33,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	UPROPERTY(EditAnywhere, Category="Components", meta=(AllowPrivateAccess=true))
+	TSubclassOf<UUserWidget> playerHudClass;
+	UPROPERTY()
+	class UPlayerHud* playerHud;
+
 private:
 	FTimerHandle staminaTimerHandle;
 	
@@ -61,11 +66,6 @@ private:
 	USpringArmComponent* springArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
 	UTargetingComponent* targetingComponent;
-
-	UPROPERTY(EditAnywhere, Category="Components", meta=(AllowPrivateAccess=true))
-	TSubclassOf<UUserWidget> playerHudClass;
-	UPROPERTY()
-	class UPlayerHud* playerHud;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Equipment", meta=(AllowPrivateAccess=true))
 	TSubclassOf<class AEquipment> leftHandEquipment = LoadObject<UClass>(nullptr, TEXT("/Script/Engine.Blueprint'/Game/Blueprints/Weapons/bp_HunterPistol_C.bp_HunterPistol_C'")); 
