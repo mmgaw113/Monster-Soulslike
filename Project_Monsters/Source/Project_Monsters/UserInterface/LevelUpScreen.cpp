@@ -64,6 +64,11 @@ void ULevelUpScreen::NativeConstruct()
 	{
 		Submit->OnClicked.AddDynamic(this, &ULevelUpScreen::OnSubmit);
 	}
+
+	if (Close)
+	{
+		Close->OnClicked.AddDynamic(this, &ULevelUpScreen::OnClose);
+	}
 }
 
 void ULevelUpScreen::SetVigor()
@@ -253,4 +258,11 @@ void ULevelUpScreen::OnSubmit()
 		UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetInputMode(FInputModeGameOnly());
 		UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetShowMouseCursor(false);
 	}
+}
+
+void ULevelUpScreen::OnClose()
+{
+	this->RemoveFromParent();
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetInputMode(FInputModeGameOnly());
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetShowMouseCursor(false);
 }
