@@ -9,7 +9,6 @@
 
 UTheHuntAttributeSet::UTheHuntAttributeSet()
 {
-	
 }
 
 void UTheHuntAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -33,19 +32,18 @@ void UTheHuntAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 void UTheHuntAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
-	
 
-	
+
 	if (Data.EvaluatedData.Attribute == GetVigorAttribute())
 	{
 		SetVigor(FMath::Clamp(GetVigor(), 0.0f, 99.0f));
 	}
-	
+
 	if (Data.EvaluatedData.Attribute == GetEnduranceAttribute())
 	{
 		SetEndurance(FMath::Clamp(GetEndurance(), 0.0f, 99.0f));
 	}
-	
+
 	if (Data.EvaluatedData.Attribute == GetStrengthAttribute())
 	{
 		SetStrength(FMath::Clamp(GetStrength(), 0.0f, 99.0f));
@@ -80,12 +78,12 @@ void UTheHuntAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribut
 	{
 		AdjustAttrbuteForMaxChange(Vigor, MaxVigor, NewValue, GetVigorAttribute());
 	}
-	
+
 	if (Attribute == GetMaxEnduranceAttribute())
 	{
 		AdjustAttrbuteForMaxChange(Endurance, MaxEndurance, NewValue, GetEnduranceAttribute());
 	}
-	
+
 	if (Attribute == GetMaxStrengthAttribute())
 	{
 		AdjustAttrbuteForMaxChange(Strength, MaxStrength, NewValue, GetStrengthAttribute());
@@ -178,7 +176,8 @@ void UTheHuntAttributeSet::OnRep_MaxBloodVials(const FGameplayAttributeData& Old
 }
 
 void UTheHuntAttributeSet::AdjustAttrbuteForMaxChange(FGameplayAttributeData& AffectedAttribute,
-	const FGameplayAttributeData MaxAttribute, float NewMaxValue, const FGameplayAttribute AffectedAttributeProperty)
+                                                      const FGameplayAttributeData MaxAttribute, float NewMaxValue,
+                                                      const FGameplayAttribute AffectedAttributeProperty)
 {
 	UAbilitySystemComponent* AbilitySystemComponent = GetOwningAbilitySystemComponent();
 	const float CurrentMaxValue = MaxAttribute.GetCurrentValue();
@@ -186,7 +185,9 @@ void UTheHuntAttributeSet::AdjustAttrbuteForMaxChange(FGameplayAttributeData& Af
 	if (!FMath::IsNearlyEqual(CurrentMaxValue, NewMaxValue) && AbilitySystemComponent)
 	{
 		const float CurrentValue = AffectedAttribute.GetCurrentValue();
-		float NewDelta = CurrentMaxValue > 0.f ? (CurrentValue * NewMaxValue / CurrentMaxValue) - CurrentValue : NewMaxValue;
+		float NewDelta = CurrentMaxValue > 0.f
+			                 ? (CurrentValue * NewMaxValue / CurrentMaxValue) - CurrentValue
+			                 : NewMaxValue;
 		AbilitySystemComponent->ApplyModToAttribute(AffectedAttributeProperty, EGameplayModOp::Additive, NewDelta);
 	}
 }

@@ -25,7 +25,7 @@ void UPlayerHud::SetHealthBuffer(int32 CurrentHealth, int32 MaxHealth)
 {
 	if (healthBarBuffer)
 	{
-		healthBarBuffer->SetPercent(CurrentHealth / MaxHealth);			
+		healthBarBuffer->SetPercent(CurrentHealth / MaxHealth);
 	}
 }
 

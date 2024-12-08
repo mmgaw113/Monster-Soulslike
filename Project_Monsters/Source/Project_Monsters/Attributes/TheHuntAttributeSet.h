@@ -35,7 +35,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, MaxVigor);
 	UFUNCTION()
 	virtual void OnRep_MaxVigor(const FGameplayAttributeData& OldMaxVigor);
-	
+
 	UPROPERTY(BlueprintReadOnly, Category="Attributes", ReplicatedUsing = OnRep_Endurance)
 	FGameplayAttributeData Endurance;
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, Endurance);
@@ -47,7 +47,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, MaxEndurance);
 	UFUNCTION()
 	virtual void OnRep_MaxEndurance(const FGameplayAttributeData& OldMaxEndurance);
-	
+
 	UPROPERTY(BlueprintReadOnly, Category="Attributes", ReplicatedUsing = OnRep_Strength)
 	FGameplayAttributeData Strength;
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, Strength);
@@ -59,7 +59,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, MaxStrength);
 	UFUNCTION()
 	virtual void OnRep_MaxStrength(const FGameplayAttributeData& OldMaxStrength);
-	
+
 	UPROPERTY(BlueprintReadOnly, Category="Attributes", ReplicatedUsing = OnRep_Dexterity)
 	FGameplayAttributeData Dexterity;
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, Dexterity);
@@ -83,7 +83,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, MaxBloodLust);
 	UFUNCTION()
 	virtual void OnRep_MaxBloodLust(const FGameplayAttributeData& OldMaxBloodLust);
-	
+
 	UPROPERTY(BlueprintReadOnly, Category="Attributes", ReplicatedUsing = OnRep_Arcane)
 	FGameplayAttributeData Arcane;
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, Arcane);
@@ -95,7 +95,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, MaxArcane);
 	UFUNCTION()
 	virtual void OnRep_MaxArcane(const FGameplayAttributeData& OldMaxArcane);
-	
+
 	UPROPERTY(BlueprintReadOnly, Category="Attributes", ReplicatedUsing = OnRep_BloodVials)
 	FGameplayAttributeData BloodVials;
 	ATTRIBUTE_ACCESSORS(UTheHuntAttributeSet, BloodVials);
@@ -110,7 +110,7 @@ public:
 
 protected:
 	void AdjustAttrbuteForMaxChange(FGameplayAttributeData& AffectedAttribute,
-		const FGameplayAttributeData MaxAttribute,
-		float NewMaxValue,
-		const FGameplayAttribute AffectedAttributeProperty);
+	                                const FGameplayAttributeData MaxAttribute,
+	                                float NewMaxValue,
+	                                const FGameplayAttribute AffectedAttributeProperty);
 };

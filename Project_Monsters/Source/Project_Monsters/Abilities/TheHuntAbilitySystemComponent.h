@@ -13,5 +13,4 @@ UCLASS()
 class PROJECT_MONSTERS_API UTheHuntAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
-	
 };

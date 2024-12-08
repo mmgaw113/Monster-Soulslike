@@ -6,7 +6,8 @@
 
 ATheHuntGameMode::ATheHuntGameMode()
 {
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/PlayerController/bp_PlayerCharacterController"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(
+		TEXT("/Game/PlayerController/bp_PlayerCharacterController"));
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;

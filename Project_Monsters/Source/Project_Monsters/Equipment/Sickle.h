@@ -16,6 +16,7 @@ class PROJECT_MONSTERS_API ASickle : public AEquipment
 
 public:
 	ASickle();
-	
-	USkeletalMesh* sickleMesh = LoadObject<USkeletalMesh>(nullptr, TEXT("/Script/Engine.SkeletalMesh'/Game/Weapon_Pack/Skeletal_Mesh/SK_Sickle.SK_Sickle'"));
+
+	USkeletalMesh* sickleMesh = LoadObject<USkeletalMesh>(
+		nullptr, TEXT("/Script/Engine.SkeletalMesh'/Game/Weapon_Pack/Skeletal_Mesh/SK_Sickle.SK_Sickle'"));
 };

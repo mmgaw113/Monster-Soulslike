@@ -11,11 +11,11 @@ UCLASS()
 class PROJECT_MONSTERS_API UPlayerHud : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 	UTheHuntGameInstance* gameInstance;
 
 	virtual void NativeConstruct() override;
-	
+
 public:
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	class UProgressBar* healthBar;
@@ -28,7 +28,7 @@ public:
 	class UCanvasPanel* healthBarCanvas;
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	UCanvasPanel* staminaBarCanvas;
-	
+
 	void SetHealth(int32 CurrentHealth, int32 MaxHealth);
 	void SetHealthBuffer(int32 CurrentHealth, int32 MaxHealth);
 	void SetStamina(float CurrentStamina, float MaxStamina);

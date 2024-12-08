@@ -93,7 +93,7 @@ public:
 	void AdjustBloodLustUp();
 	UFUNCTION()
 	void AdjustArcaneUp();
-	
+
 	void AdjustVigorDown();
 	void AdjustEnduranceDown();
 	void AdjustStrengthDown();

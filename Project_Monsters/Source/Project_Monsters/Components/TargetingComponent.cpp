@@ -32,7 +32,8 @@ void UTargetingComponent::BeginPlay()
 
 
 // Called every frame
-void UTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+                                        FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -44,7 +45,11 @@ void UTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 float UTargetingComponent::TargetDistanceCheck(AActor* Target)
 {
-	return FVector::DotProduct(playerCamera->GetForwardVector(), UKismetMathLibrary::MakeRotFromX(UKismetMathLibrary::FindLookAtRotation(playerController->GetActorLocation(), Target->GetActorLocation()).Vector()).Vector());
+	return FVector::DotProduct(playerCamera->GetForwardVector(),
+	                           UKismetMathLibrary::MakeRotFromX(
+		                           UKismetMathLibrary::FindLookAtRotation(
+			                           playerController->GetActorLocation(),
+			                           Target->GetActorLocation()).Vector()).Vector());
 }
 
 
@@ -54,10 +59,12 @@ AActor* UTargetingComponent::FindClosestTarget(TArray<AActor*> Actors)
 	TArray<AActor*> actorsToIgnore;
 	float distanceToTarget = 0.0f;
 	AActor* closestTarget = nullptr;
-	
+
 	for (auto Actor : Actors)
 	{
-		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), playerCamera->GetComponentLocation(), Actor->GetActorLocation(), TraceTypeQuery1, false, actorsToIgnore, EDrawDebugTrace::None, outHit, true))
+		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), playerCamera->GetComponentLocation(),
+		                                          Actor->GetActorLocation(), TraceTypeQuery1, false, actorsToIgnore,
+		                                          EDrawDebugTrace::None, outHit, true))
 		{
 			if (TargetDistanceCheck(Actor) > distanceToTarget)
 			{
@@ -75,12 +82,14 @@ AActor* UTargetingComponent::FindClosestTargetLeft(TArray<AActor*> Actors)
 	TArray<AActor*> actorsToIgnore;
 	float distanceToTarget = 0.0f;
 	AActor* closestTarget = nullptr;
-	
+
 	for (auto Actor : Actors)
 	{
-		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), playerCamera->GetComponentLocation(), Actor->GetActorLocation(), TraceTypeQuery1, false, actorsToIgnore, EDrawDebugTrace::None, outHit, true) &&
+		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), playerCamera->GetComponentLocation(),
+		                                          Actor->GetActorLocation(), TraceTypeQuery1, false, actorsToIgnore,
+		                                          EDrawDebugTrace::None, outHit, true) &&
 			FVector::DotProduct(playerCamera->GetRightVector(), outHit.Normal) > 0 && lockedOnActor != Actor)
-		{			
+		{
 			if (TargetDistanceCheck(Actor) > distanceToTarget)
 			{
 				auto distance = FString::SanitizeFloat(distanceToTarget);
@@ -98,10 +107,12 @@ AActor* UTargetingComponent::FindClosestTargetRight(TArray<AActor*> Actors)
 	TArray<AActor*> actorsToIgnore;
 	float distanceToTarget = 0.0f;
 	AActor* closestTarget = nullptr;
-	
+
 	for (auto Actor : Actors)
 	{
-		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), playerCamera->GetComponentLocation(), Actor->GetActorLocation(), TraceTypeQuery1, false, actorsToIgnore, EDrawDebugTrace::None, outHit, true) &&
+		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), playerCamera->GetComponentLocation(),
+		                                          Actor->GetActorLocation(), TraceTypeQuery1, false, actorsToIgnore,
+		                                          EDrawDebugTrace::None, outHit, true) &&
 			FVector::DotProduct(playerCamera->GetRightVector(), outHit.Normal) < 0 && lockedOnActor != Actor)
 		{
 			if (TargetDistanceCheck(Actor) > distanceToTarget)
@@ -123,8 +134,10 @@ TArray<AActor*> UTargetingComponent::FindActorsToLockOnTo()
 	TArray<FHitResult> hitResults;
 	TArray<AActor*> actorsToIgnore = {GetOwner()};
 	TArray<AActor*> potentialTargetedActors;
-	
-	if (UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), traceStart, traceStart, radius, ObjectTypesArray, false, actorsToIgnore, EDrawDebugTrace::None, hitResults, true))
+
+	if (UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), traceStart, traceStart, radius, ObjectTypesArray,
+	                                                     false, actorsToIgnore, EDrawDebugTrace::None, hitResults,
+	                                                     true))
 	{
 		for (auto outHit : hitResults)
 		{
@@ -162,7 +175,7 @@ void UTargetingComponent::LockOnToTarget()
 void UTargetingComponent::LockOnToTargetLeft()
 {
 	if (lockedOnActor)
-	{		
+	{
 		if (FindClosestTargetLeft(FindActorsToLockOnTo()))
 		{
 			ITargetingInterface::Execute_DisplayLockedOnWidget(lockedOnActor, false);
@@ -175,7 +188,7 @@ void UTargetingComponent::LockOnToTargetLeft()
 void UTargetingComponent::LockOnToTargetRight()
 {
 	if (lockedOnActor)
-	{		
+	{
 		if (FindClosestTargetRight(FindActorsToLockOnTo()))
 		{
 			ITargetingInterface::Execute_DisplayLockedOnWidget(lockedOnActor, false);
@@ -195,6 +208,9 @@ void UTargetingComponent::LookAtTarget()
 {
 	auto xRot = playerController->GetController()->GetControlRotation().Roll;
 	auto interp = FMath::RInterpConstantTo(playerController->GetController()->GetControlRotation(),
-		UKismetMathLibrary::FindLookAtRotation(playerController->GetActorLocation(), lockedOnActor->GetActorLocation() - FVector(0.0, 0.0, 135.0)), GetWorld()->GetTimeSeconds(), 120.0);
+	                                       UKismetMathLibrary::FindLookAtRotation(
+		                                       playerController->GetActorLocation(),
+		                                       lockedOnActor->GetActorLocation() - FVector(0.0, 0.0, 135.0)),
+	                                       GetWorld()->GetTimeSeconds(), 120.0);
 	playerController->GetController()->SetControlRotation(FRotator(interp.Pitch, interp.Yaw, xRot));
 }

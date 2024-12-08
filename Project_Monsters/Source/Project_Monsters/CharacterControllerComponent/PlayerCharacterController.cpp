@@ -23,31 +23,31 @@ APlayerCharacterController::APlayerCharacterController()
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetCapsuleComponent()->InitCapsuleSize(30.f, 90.0f);
-	
+
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-	
-	GetCharacterMovement()->bOrientRotationToMovement = true; 
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-	
+
 	GetCharacterMovement()->JumpZVelocity = 450.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
-	
+
 	springArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	springArmComponent->SetupAttachment(RootComponent);
-	springArmComponent->TargetArmLength = 400.0f; 	
-	springArmComponent->bUsePawnControlRotation = true; 
-	
+	springArmComponent->TargetArmLength = 400.0f;
+	springArmComponent->bUsePawnControlRotation = true;
+
 	cameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	cameraComponent->SetupAttachment(springArmComponent, USpringArmComponent::SocketName); 
+	cameraComponent->SetupAttachment(springArmComponent, USpringArmComponent::SocketName);
 	cameraComponent->bUsePawnControlRotation = false;
 
-	targetingComponent = CreateDefaultSubobject<UTargetingComponent>("TargetingComponent");	
+	targetingComponent = CreateDefaultSubobject<UTargetingComponent>("TargetingComponent");
 }
 
 void APlayerCharacterController::BeginPlay()
@@ -62,10 +62,11 @@ void APlayerCharacterController::BeginPlay()
 	maxHealth = CalculateMaxHealth(vigorLevel);
 	stamina = CalculateMaxStamina(enduranceLevel);
 	maxStamina = CalculateMaxStamina(enduranceLevel);
-	
+
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(mappingContext, 0);
 		}
@@ -77,9 +78,9 @@ void APlayerCharacterController::BeginPlay()
 		check(playerHud);
 		playerHud->AddToPlayerScreen();
 	}
-	
+
 	AddEquipment("LeftHandSocket", leftHandEquipment);
-    AddEquipment("RightHandSocket", rightHandEquipment);
+	AddEquipment("RightHandSocket", rightHandEquipment);
 }
 
 void APlayerCharacterController::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -96,7 +97,6 @@ void APlayerCharacterController::EndPlay(const EEndPlayReason::Type EndPlayReaso
 void APlayerCharacterController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -106,27 +106,37 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		//Basic Movement
-		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Started, this, &APlayerCharacterController::Jump);
+		EnhancedInputComponent->BindAction(moveAction, ETriggerEvent::Triggered, this,
+		                                   &APlayerCharacterController::Move);
+		EnhancedInputComponent->BindAction(lookAction, ETriggerEvent::Triggered, this,
+		                                   &APlayerCharacterController::Look);
+		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Triggered, this,
+		                                   &APlayerCharacterController::Sprint);
+		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Canceled, this,
+		                                   &APlayerCharacterController::StopSprint);
+		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Completed, this,
+		                                   &APlayerCharacterController::StopSprint);
+		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Started, this,
+		                                   &APlayerCharacterController::Jumped);
 		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-		EnhancedInputComponent->BindAction(moveAction, ETriggerEvent::Triggered, this, &APlayerCharacterController::Move);
-		EnhancedInputComponent->BindAction(lookAction, ETriggerEvent::Triggered, this, &APlayerCharacterController::Look);
-		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Triggered, this, &APlayerCharacterController::Sprint);
-		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Canceled, this, &APlayerCharacterController::StopSprint);
-		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Completed, this, &APlayerCharacterController::StopSprint);
+		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Canceled, this, &ACharacter::StopJumping);
 
 		//Targeting Enemies
-		EnhancedInputComponent->BindAction(lockOnAction, ETriggerEvent::Started, targetingComponent, &UTargetingComponent::LockOnToTarget);
-		EnhancedInputComponent->BindAction(lockOnActionLeft, ETriggerEvent::Started, targetingComponent, &UTargetingComponent::LockOnToTargetLeft);
-		EnhancedInputComponent->BindAction(lockOnActionRight, ETriggerEvent::Started, targetingComponent, &UTargetingComponent::LockOnToTargetRight);
+		EnhancedInputComponent->BindAction(lockOnAction, ETriggerEvent::Started, targetingComponent,
+		                                   &UTargetingComponent::LockOnToTarget);
+		EnhancedInputComponent->BindAction(lockOnActionLeft, ETriggerEvent::Started, targetingComponent,
+		                                   &UTargetingComponent::LockOnToTargetLeft);
+		EnhancedInputComponent->BindAction(lockOnActionRight, ETriggerEvent::Started, targetingComponent,
+		                                   &UTargetingComponent::LockOnToTargetRight);
 	}
 }
 
-void APlayerCharacterController::Jump()
-{	
+void APlayerCharacterController::Jumped(const FInputActionValue& Value)
+{
 	if (stamina > 15.0f)
 	{
 		stamina -= 15.0f;
-		ACharacter::Jump();
+		Jump();
 
 		if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 		{
@@ -139,7 +149,8 @@ void APlayerCharacterController::Landed(const FHitResult& Hit)
 {
 	if (!GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 	{
-		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f, true);
+		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
+		                                true);
 	}
 }
 
@@ -174,7 +185,7 @@ void APlayerCharacterController::Move(const FInputActionValue& Value)
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		
+
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
@@ -190,7 +201,7 @@ void APlayerCharacterController::Sprint(const FInputActionValue& Value)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 800.0f;
 			Stamina(true, false);
-			
+
 			if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 			{
 				GetWorldTimerManager().ClearTimer(staminaTimerHandle);
@@ -200,14 +211,14 @@ void APlayerCharacterController::Sprint(const FInputActionValue& Value)
 		{
 			GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 			Stamina(false, true);
-		}	
+		}
 	}
 }
 
 void APlayerCharacterController::StopSprint()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
-	Stamina(false,  false);
+	Stamina(false, false);
 }
 
 void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
@@ -219,7 +230,8 @@ void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
 	}
 	else if (!Sprinting && !ReachedZero)
 	{
-		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f, true);
+		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
+		                                true);
 	}
 }
 

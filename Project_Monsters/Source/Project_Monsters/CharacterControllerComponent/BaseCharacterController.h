@@ -67,17 +67,17 @@ public:
 
 	virtual int32 CalculateMaxHealth(int Vigor) const;
 	virtual int32 CalculateMaxStamina(int Endurance) const;
-	
+
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	bool ActivateAbilitiesWithTag(FGameplayTagContainer AbilityTags, bool AllowRemoteActivation = true);
-	
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Abilities")
 	TArray<TSubclassOf<class UGameplayAbility>> defaultAbilities;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
 	UAbilitySystemComponent* abilitySystemComponent;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	UTheHuntAttributeSet* attributes;
-	
+
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Attributes")
 	int32 characterLevel;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Attributes")
@@ -116,7 +116,7 @@ protected:
 	TSubclassOf<class UGameplayEffect> bloodLustAttributeEffects;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
 	TSubclassOf<class UGameplayEffect> arcaneAttributeEffects;
-	
+
 
 	virtual void SetTestAbilities();
 };
