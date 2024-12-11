@@ -6,22 +6,36 @@
 #include "GameFramework/Actor.h"
 #include "Equipment.generated.h"
 
+UENUM(BlueprintType)
+enum EScaling
+{
+	S,
+	A,
+	B,
+	C,
+	E
+};
+
 UCLASS()
 class PROJECT_MONSTERS_API AEquipment : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	AEquipment();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	USkeletalMeshComponent* mesh;
+	
+	UPROPERTY()
+	TEnumAsByte<EScaling> Arcane;
+	UPROPERTY()
+	TEnumAsByte<EScaling> Dexterity;
+	UPROPERTY()
+	TEnumAsByte<EScaling> Strength;
 };

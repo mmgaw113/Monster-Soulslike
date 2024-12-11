@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "GameFramework/Character.h"
 #include "BaseCharacterController.generated.h"
 
@@ -33,6 +34,8 @@ public:
 	void OnStaminaChange(float DeltaValue, AActor* OtherActor);
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeath();
+	UFUNCTION(BlueprintCallable)
+	void ActivateMeleeAbility(bool AllowRemoteActivation);
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetCharacterLevel();
@@ -117,6 +120,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
 	TSubclassOf<class UGameplayEffect> arcaneAttributeEffects;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Attributes | Melee")
+	TSubclassOf<UGameplayAbility> meleeAbility;
 
+	UPROPERTY()
+	FGameplayAbilitySpecHandle meleeAbilitySpecHandle;
+
+	virtual void SetMeleeAbility();
+	
 	virtual void SetTestAbilities();
 };

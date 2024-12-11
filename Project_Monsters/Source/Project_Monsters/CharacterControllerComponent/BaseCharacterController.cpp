@@ -53,6 +53,7 @@ void ABaseCharacterController::PossessedBy(AController* NewController)
 
 	SetTestAbilities();
 	SetAttributeValues();
+	SetMeleeAbility();
 }
 
 void ABaseCharacterController::OnRep_PlayerState()
@@ -152,6 +153,16 @@ void ABaseCharacterController::GiveDefaultAbilities()
 			abilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartUpAbility.GetDefaultObject(), 1, 0));
 		}
 	}
+}
+
+void ABaseCharacterController::ActivateMeleeAbility(bool AllowRemoteActivation)
+{
+	if (!abilitySystemComponent && !meleeAbilitySpecHandle.IsValid())
+	{
+		return;
+	}
+	
+	abilitySystemComponent->TryActivateAbility(meleeAbilitySpecHandle, AllowRemoteActivation);
 }
 
 int32 ABaseCharacterController::GetCharacterLevel()
@@ -372,6 +383,16 @@ bool ABaseCharacterController::ActivateAbilitiesWithTag(FGameplayTagContainer Ab
 	}
 
 	return abilitySystemComponent->TryActivateAbilitiesByTag(AbilityTags, AllowRemoteActivation);
+}
+
+void ABaseCharacterController::SetMeleeAbility()
+{
+	if (!abilitySystemComponent)
+	{
+		return;
+	}
+
+	meleeAbilitySpecHandle = abilitySystemComponent->GiveAbility(FGameplayAbilitySpec(meleeAbility, strengthLevel, INDEX_NONE, this));
 }
 
 void ABaseCharacterController::SetTestAbilities()

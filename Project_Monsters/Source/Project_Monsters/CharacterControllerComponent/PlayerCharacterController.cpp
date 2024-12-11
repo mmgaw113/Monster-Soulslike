@@ -133,6 +133,10 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 		                                   &UTargetingComponent::LockOnToTargetLeft);
 		EnhancedInputComponent->BindAction(lockOnActionRight, ETriggerEvent::Started, targetingComponent,
 		                                   &UTargetingComponent::LockOnToTargetRight);
+
+		// Melee and Perry
+		EnhancedInputComponent->BindAction(meleeAction, ETriggerEvent::Started, this,
+								   &ABaseCharacterController::ActivateMeleeAbility, true);
 	}
 }
 
