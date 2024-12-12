@@ -13,6 +13,7 @@ enum EScaling
 	A,
 	B,
 	C,
+	D,
 	E
 };
 
@@ -31,11 +32,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	USkeletalMeshComponent* mesh;
-	
-	UPROPERTY()
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	int damage;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TEnumAsByte<EScaling> Arcane;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TEnumAsByte<EScaling> Dexterity;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TEnumAsByte<EScaling> Strength;
 };

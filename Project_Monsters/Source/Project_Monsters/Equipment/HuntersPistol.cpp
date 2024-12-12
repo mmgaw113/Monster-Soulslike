@@ -7,4 +7,7 @@ AHuntersPistol::AHuntersPistol()
 {
 	mesh = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMesh");
 	mesh->SetSkeletalMesh(pistolMesh);
+	Strength = E;
+	Dexterity = D;
+	Arcane = B;
 }

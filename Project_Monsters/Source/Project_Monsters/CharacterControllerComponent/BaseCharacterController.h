@@ -6,6 +6,7 @@
 #include "AbilitySystemInterface.h"
 #include "GameplayAbilitySpecHandle.h"
 #include "GameFramework/Character.h"
+#include "Project_Monsters/Equipment/Equipment.h"
 #include "BaseCharacterController.generated.h"
 
 struct FGameplayTagContainer;
@@ -35,7 +36,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeath();
 	UFUNCTION(BlueprintCallable)
-	void ActivateMeleeAbility(bool AllowRemoteActivation);
+	bool ActivateMeleeAbility(bool AllowRemoteActivation);
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetCharacterLevel();
@@ -68,6 +69,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetMaxBloodVials() const;
 
+	virtual int32 CalculateDamageOutput(TEnumAsByte<EScaling> Strength, TEnumAsByte<EScaling> Dexterity, TEnumAsByte<EScaling> Arcane);
 	virtual int32 CalculateMaxHealth(int Vigor) const;
 	virtual int32 CalculateMaxStamina(int Endurance) const;
 

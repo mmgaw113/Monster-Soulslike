@@ -2,12 +2,12 @@
 
 
 #include "BaseCharacterController.h"
+#include "Project_Monsters/Equipment/Equipment.h"
 #include "GameplayAbilitySpec.h"
 #include "GameplayEffectTypes.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Project_Monsters/Abilities/TheHuntAbilitySystemComponent.h"
 #include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
-#include "Project_Monsters/Equipment/Equipment.h"
 
 ABaseCharacterController::ABaseCharacterController()
 {
@@ -155,14 +155,14 @@ void ABaseCharacterController::GiveDefaultAbilities()
 	}
 }
 
-void ABaseCharacterController::ActivateMeleeAbility(bool AllowRemoteActivation)
+bool ABaseCharacterController::ActivateMeleeAbility(bool AllowRemoteActivation)
 {
 	if (!abilitySystemComponent && !meleeAbilitySpecHandle.IsValid())
 	{
-		return;
+		return false;;
 	}
 	
-	abilitySystemComponent->TryActivateAbility(meleeAbilitySpecHandle, AllowRemoteActivation);
+	return abilitySystemComponent->TryActivateAbility(meleeAbilitySpecHandle, AllowRemoteActivation);
 }
 
 int32 ABaseCharacterController::GetCharacterLevel()
@@ -309,6 +309,86 @@ int32 ABaseCharacterController::GetMaxBloodVials() const
 	}
 
 	return attributes->GetMaxBloodVials();
+}
+
+int32 ABaseCharacterController::CalculateDamageOutput(TEnumAsByte<EScaling> Strength, TEnumAsByte<EScaling> Dexterity, TEnumAsByte<EScaling> Arcane)
+{
+	if (!attributes)
+	{
+		return 0;
+	}
+
+	int strengthValue = 0;
+	int dexterityValue = 0;
+	int arcaneValue = 0;
+	
+	switch (Strength)
+	{
+		case S:
+			strengthValue = strengthLevel * 3;
+			break;
+		case A:
+			strengthValue = strengthLevel * 2;
+			break;
+		case B:
+			strengthValue = strengthLevel * 1.5f;
+			break;
+		case C:
+			strengthValue = strengthLevel * 1;
+			break;
+		case D:
+			strengthValue = strengthLevel * 0.75f;
+			break;
+		case E:
+			strengthValue = strengthLevel * 0.5f;
+			break;
+	}
+
+	switch (Dexterity)
+	{
+		case S:
+			dexterityValue = dexterityLevel * 3;
+			break;
+		case A:
+			dexterityValue = dexterityLevel * 2;
+			break;
+		case B:
+			dexterityValue = dexterityLevel * 1.5f;
+			break;
+		case C:
+			dexterityValue = dexterityLevel * 1;
+			break;
+		case D:
+			dexterityValue = dexterityLevel * 0.75f;
+			break;
+		case E:
+			dexterityValue = dexterityLevel * 0.5f;
+			break;
+	}
+
+	switch (Arcane)
+	{
+		case S:
+			arcaneValue = arcaneLevel * 3;
+			break;
+		case A:
+			arcaneValue = arcaneLevel * 2;
+			break;
+		case B:
+			arcaneValue = arcaneLevel * 1.5f;
+			break;
+		case C:
+			arcaneValue = arcaneLevel * 1;
+			break;
+		case D:
+			arcaneValue = arcaneLevel * 0.75f;
+			break;
+		case E:
+			arcaneValue = arcaneLevel * 0.5f;
+			break;
+	}
+
+	return strengthValue + dexterityValue + arcaneValue;
 }
 
 int32 ABaseCharacterController::CalculateMaxHealth(int Vigor) const
