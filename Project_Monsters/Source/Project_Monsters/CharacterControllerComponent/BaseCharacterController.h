@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "GameFramework/Character.h"
+#include "Project_Monsters/Equipment/Equipment.h"
 #include "BaseCharacterController.generated.h"
 
 struct FGameplayTagContainer;
@@ -17,7 +19,7 @@ class PROJECT_MONSTERS_API ABaseCharacterController : public ACharacter, public 
 
 public:
 	ABaseCharacterController();
-	void AddEquipment(FName SocketName, UClass* Equipment) const;
+	AEquipment* AddEquipment(FName SocketName, UClass* Equipment) const;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
@@ -33,6 +35,8 @@ public:
 	void OnStaminaChange(float DeltaValue, AActor* OtherActor);
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeath();
+	UFUNCTION(BlueprintCallable)
+	bool ActivateMeleeAbility(bool AllowRemoteActivation);
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetCharacterLevel();
@@ -64,6 +68,10 @@ public:
 	virtual int32 GetBloodVials() const;
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetMaxBloodVials() const;
+
+	virtual int CalculateStrengthOutput(TEnumAsByte<EScaling> Strength);
+	virtual int CalculateDexterityOutput(TEnumAsByte<EScaling> Dexterity);
+	virtual int CalculateArcaneOutput(TEnumAsByte<EScaling> Arcane);
 
 	virtual int32 CalculateMaxHealth(int Vigor) const;
 	virtual int32 CalculateMaxStamina(int Endurance) const;
@@ -117,6 +125,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attributes")
 	TSubclassOf<class UGameplayEffect> arcaneAttributeEffects;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Attributes | Melee")
+	TSubclassOf<UGameplayAbility> meleeAbility;
 
+	UPROPERTY()
+	FGameplayAbilitySpecHandle meleeAbilitySpecHandle;
+
+	virtual void SetMeleeAbility();
+	
 	virtual void SetTestAbilities();
 };

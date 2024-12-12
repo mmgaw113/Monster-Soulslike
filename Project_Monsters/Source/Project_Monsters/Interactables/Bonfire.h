@@ -14,12 +14,6 @@ class PROJECT_MONSTERS_API ABonfire : public AActor, public IInteractableInterfa
 
 public:
 	ABonfire();
-
-protected:
-	virtual void BeginPlay() override;
-
-public:
-	virtual void Tick(float DeltaTime) override;
 	virtual void Interact_Implementation() override;
 
 private:

@@ -253,6 +253,8 @@ void ULevelUpScreen::OnSubmit()
 		character->health = character->maxHealth;
 		character->maxStamina = character->CalculateMaxStamina(character->enduranceLevel);
 		character->stamina = character->maxStamina;
+		character->primaryWeapon->UpdateDamage();
+		character->secondaryWeapon->UpdateDamage();
 		character->GetCharacterLevel();
 		this->RemoveFromParent();
 		UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetInputMode(FInputModeGameOnly());

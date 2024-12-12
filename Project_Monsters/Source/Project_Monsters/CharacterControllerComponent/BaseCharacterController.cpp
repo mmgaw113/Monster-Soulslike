@@ -2,12 +2,12 @@
 
 
 #include "BaseCharacterController.h"
+#include "Project_Monsters/Equipment/Equipment.h"
 #include "GameplayAbilitySpec.h"
 #include "GameplayEffectTypes.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Project_Monsters/Abilities/TheHuntAbilitySystemComponent.h"
 #include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
-#include "Project_Monsters/Equipment/Equipment.h"
 
 ABaseCharacterController::ABaseCharacterController()
 {
@@ -24,17 +24,18 @@ ABaseCharacterController::ABaseCharacterController()
 	arcaneLevel = 1;
 }
 
-void ABaseCharacterController::AddEquipment(FName SocketName, UClass* Equipment) const
+AEquipment* ABaseCharacterController::AddEquipment(FName SocketName, UClass* Equipment) const
 {
 	FActorSpawnParameters spawnInfo;
 	FAttachmentTransformRules transformRules = FAttachmentTransformRules::SnapToTargetIncludingScale;
 	auto equipmentItem = GetWorld()->SpawnActor<AEquipment>(Equipment, GetMesh()->GetSocketLocation(SocketName),
-	                                                        GetMesh()->GetSocketRotation(SocketName), spawnInfo);
-
+	                                                        GetMesh()->GetSocketRotation(SocketName), spawnInfo);	
 	if (equipmentItem)
 	{
 		equipmentItem->AttachToComponent(GetMesh(), transformRules, SocketName);
 	}
+	
+	return equipmentItem;
 }
 
 UAbilitySystemComponent* ABaseCharacterController::GetAbilitySystemComponent() const
@@ -53,6 +54,7 @@ void ABaseCharacterController::PossessedBy(AController* NewController)
 
 	SetTestAbilities();
 	SetAttributeValues();
+	SetMeleeAbility();
 }
 
 void ABaseCharacterController::OnRep_PlayerState()
@@ -152,6 +154,16 @@ void ABaseCharacterController::GiveDefaultAbilities()
 			abilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartUpAbility.GetDefaultObject(), 1, 0));
 		}
 	}
+}
+
+bool ABaseCharacterController::ActivateMeleeAbility(bool AllowRemoteActivation)
+{
+	if (!abilitySystemComponent && !meleeAbilitySpecHandle.IsValid())
+	{
+		return false;;
+	}
+	
+	return abilitySystemComponent->TryActivateAbility(meleeAbilitySpecHandle, AllowRemoteActivation);
 }
 
 int32 ABaseCharacterController::GetCharacterLevel()
@@ -300,6 +312,116 @@ int32 ABaseCharacterController::GetMaxBloodVials() const
 	return attributes->GetMaxBloodVials();
 }
 
+int ABaseCharacterController::CalculateStrengthOutput(TEnumAsByte<EScaling> Strength)
+{
+	if (!attributes)
+	{
+		return 0;
+	}
+
+	int strengthValue = 0;
+	
+	switch (Strength)
+	{
+		default:
+			strengthValue = strengthLevel * 0;
+			break;
+		case None:
+			strengthValue = strengthLevel * 0;
+			break;
+		case S:
+			strengthValue = strengthLevel * 3;
+			break;
+		case A:
+			strengthValue = strengthLevel * 2;
+			break;
+		case B:
+			strengthValue = strengthLevel * 1.5f;
+			break;
+		case C:
+			strengthValue = strengthLevel * 1;
+			break;
+		case D:
+			strengthValue = strengthLevel * 0.75f;
+			break;
+		case E:
+			strengthValue = strengthLevel * 0.5f;
+			break;
+	}
+
+	return strengthValue;
+}
+
+int ABaseCharacterController::CalculateDexterityOutput(TEnumAsByte<EScaling> Dexterity)
+{
+	int dexterityValue = 0;
+	
+	switch (Dexterity)
+	{
+	default:
+		dexterityValue = dexterityLevel * 0;
+		break;
+	case None:
+		dexterityValue = dexterityLevel * 0;
+		break;
+	case S:
+		dexterityValue = dexterityLevel * 3;
+		break;
+	case A:
+		dexterityValue = dexterityLevel * 2;
+		break;
+	case B:
+		dexterityValue = dexterityLevel * 1.5f;
+		break;
+	case C:
+		dexterityValue = dexterityLevel * 1;
+		break;
+	case D:
+		dexterityValue = dexterityLevel * 0.75f;
+		break;
+	case E:
+		dexterityValue = dexterityLevel * 0.5f;
+		break;
+	}
+
+	return dexterityValue;
+}
+
+int ABaseCharacterController::CalculateArcaneOutput(TEnumAsByte<EScaling> Arcane)
+{
+	int arcaneValue = 0;
+
+	switch (Arcane)
+	{
+	default:
+		arcaneValue = arcaneLevel * 0;
+		break;
+	case None:
+		arcaneValue = arcaneLevel * 0;
+		break;
+	case S:
+		arcaneValue = arcaneLevel * 3;
+		break;
+	case A:
+		arcaneValue = arcaneLevel * 2;
+		break;
+	case B:
+		arcaneValue = arcaneLevel * 1.5f;
+		break;
+	case C:
+		arcaneValue = arcaneLevel * 1;
+		break;
+	case D:
+		arcaneValue = arcaneLevel * 0.75f;
+		break;
+	case E:
+		arcaneValue = arcaneLevel * 0.5f;
+		break;
+	}
+
+	return arcaneValue;
+}
+
 int32 ABaseCharacterController::CalculateMaxHealth(int Vigor) const
 {
 	if (UKismetMathLibrary::InRange_IntInt(Vigor, 1, 25))
@@ -372,6 +494,16 @@ bool ABaseCharacterController::ActivateAbilitiesWithTag(FGameplayTagContainer Ab
 	}
 
 	return abilitySystemComponent->TryActivateAbilitiesByTag(AbilityTags, AllowRemoteActivation);
+}
+
+void ABaseCharacterController::SetMeleeAbility()
+{
+	if (!abilitySystemComponent)
+	{
+		return;
+	}
+
+	meleeAbilitySpecHandle = abilitySystemComponent->GiveAbility(FGameplayAbilitySpec(meleeAbility, strengthLevel, INDEX_NONE, this));
 }
 
 void ABaseCharacterController::SetTestAbilities()

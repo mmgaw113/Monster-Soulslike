@@ -12,9 +12,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
-#include "AbilitySystemComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Project_Monsters/Attributes/TheHuntAttributeSet.h"
 #include "Project_Monsters/Equipment/Equipment.h"
 #include "Project_Monsters/Interfaces/InteractableInterface.h"
 
@@ -80,8 +78,8 @@ void APlayerCharacterController::BeginPlay()
 		playerHud->AddToPlayerScreen();
 	}
 
-	AddEquipment("LeftHandSocket", leftHandEquipment);
-	AddEquipment("RightHandSocket", rightHandEquipment);
+	secondaryWeapon = AddEquipment("LeftHandSocket", leftHandEquipment);
+	primaryWeapon = AddEquipment("RightHandSocket", rightHandEquipment);
 }
 
 void APlayerCharacterController::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -133,6 +131,39 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 		                                   &UTargetingComponent::LockOnToTargetLeft);
 		EnhancedInputComponent->BindAction(lockOnActionRight, ETriggerEvent::Started, targetingComponent,
 		                                   &UTargetingComponent::LockOnToTargetRight);
+
+		// Melee and Perry
+		EnhancedInputComponent->BindAction(meleeAction, ETriggerEvent::Started, this,
+		                                   &APlayerCharacterController::Attack);
+	}
+}
+
+void APlayerCharacterController::Attack()
+{
+	if (stamina > 20.0f)
+	{
+		stamina -= 20.0f;
+		UpdateStaminaBar();
+		ActivateMeleeAbility(true);
+		primaryWeight = 0.0f;
+		secondaryWeight = 0.0f;
+		
+		if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
+		{
+			GetWorldTimerManager().ClearTimer(staminaTimerHandle);
+		}
+	}	
+}
+
+void APlayerCharacterController::AttackFinished()
+{
+	primaryWeight = 1.0f;
+	secondaryWeight = 1.0f;
+	
+	if (!GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
+	{
+		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
+										true);
 	}
 }
 

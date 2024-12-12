@@ -3,21 +3,17 @@
 
 #include "Equipment.h"
 
-// Sets default values
+#include "Kismet/GameplayStatics.h"
+#include "Project_Monsters/CharacterControllerComponent/BaseCharacterController.h"
+
 AEquipment::AEquipment()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
-void AEquipment::BeginPlay()
+void AEquipment::UpdateDamage()
 {
-	Super::BeginPlay();
-}
-
-// Called every frame
-void AEquipment::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	auto characterController = Cast<ABaseCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+	damage = 0;
+	damage += characterController->CalculateArcaneOutput(Arcane) + characterController->CalculateDexterityOutput(Dexterity) + characterController->CalculateStrengthOutput(Strength);
 }

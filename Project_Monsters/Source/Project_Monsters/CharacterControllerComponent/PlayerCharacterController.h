@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
 #include "BaseCharacterController.h"
-#include "GameplayTagContainer.h"
 #include "PlayerCharacterController.generated.h"
 
 class UTargetingComponent;
@@ -40,8 +39,15 @@ public:
 	UPROPERTY(EditAnywhere, Category="Components", meta=(AllowPrivateAccess=true))
 	TSubclassOf<UUserWidget> levelUpScreenClass;
 	UPROPERTY()
-	class UUserWidget* levelUpScreen;
+	UUserWidget* levelUpScreen;
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Animation")
+	float primaryWeight = 1.0f;
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Animation")
+	float secondaryWeight = 1.0f;
+	AEquipment* primaryWeapon;
+	AEquipment* secondaryWeapon;
+	
 private:
 	FTimerHandle staminaTimerHandle;
 
@@ -77,6 +83,10 @@ private:
 		nullptr, TEXT(
 			"/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_NextTargetRight.IA_NextTargetRight'"));
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
+	UInputAction* meleeAction = LoadObject<UInputAction>(
+		nullptr, TEXT(
+			"/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_Melee.IA_Melee'"));
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
 	UInputAction* moveAction = LoadObject<UInputAction>(
 		nullptr, TEXT("/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_Move.IA_Move'"));;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
@@ -97,31 +107,28 @@ private:
 	TSubclassOf<AEquipment> rightHandEquipment = LoadObject<UClass>(
 		nullptr, TEXT("/Script/Engine.Blueprint'/Game/Blueprints/Weapons/bp_Sickle_C.bp_Sickle_C'"));
 
-	void Look(const FInputActionValue& Value);
-	void Move(const FInputActionValue& Value);
+	void Attack();
 	void Interact();
 	void Jumped(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+	void Move(const FInputActionValue& Value);
+	void RechargeStamina();
 	void Sprint(const FInputActionValue& Value);
 	void StopSprint();
 	void Stamina(bool Sprinting, bool ReachedZero);
-	void RechargeStamina();
+
+	UFUNCTION(BlueprintCallable)
+	void AttackFinished();
+
+	UFUNCTION(BlueprintCallable)
+	void Landed();
+	
+	UFUNCTION(BlueprintCallable)
+	void OnJump();
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateHealthBar() const;
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateStaminaBar() const;
-
-	UFUNCTION(BlueprintCallable)
-	void OnJump();
-
-	UFUNCTION(BlueprintCallable)
-	void Landed();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="GameplayTags", meta=(AllowPrivateAccess))
-	FGameplayTag jumpTag;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="GameplayTags", meta=(AllowPrivateAccess))
-	FGameplayTag staminaTag;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="GameplayTags", meta=(AllowPrivateAccess))
-	FGameplayTag rechargeTag;
 };
