@@ -45,6 +45,8 @@ public:
 	float primaryWeight = 1.0f;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Animation")
 	float secondaryWeight = 1.0f;
+	AEquipment* primaryWeapon;
+	AEquipment* secondaryWeapon;
 	
 private:
 	FTimerHandle staminaTimerHandle;

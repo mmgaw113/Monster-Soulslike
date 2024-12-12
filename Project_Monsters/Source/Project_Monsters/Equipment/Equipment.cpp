@@ -11,14 +11,9 @@ AEquipment::AEquipment()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AEquipment::BeginPlay()
+void AEquipment::UpdateDamage()
 {
-	Super::BeginPlay();
 	auto characterController = Cast<ABaseCharacterController>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-	damage += characterController->CalculateDamageOutput(Strength, Dexterity, Arcane);
-}
-
-void AEquipment::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	damage = 0;
+	damage += characterController->CalculateArcaneOutput(Arcane) + characterController->CalculateDexterityOutput(Dexterity) + characterController->CalculateStrengthOutput(Strength);
 }

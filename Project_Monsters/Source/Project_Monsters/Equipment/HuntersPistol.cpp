@@ -2,12 +2,22 @@
 
 
 #include "HuntersPistol.h"
+#include "Kismet/GameplayStatics.h"
+#include "Project_Monsters/CharacterControllerComponent/BaseCharacterController.h"
 
 AHuntersPistol::AHuntersPistol()
 {
 	mesh = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMesh");
 	mesh->SetSkeletalMesh(pistolMesh);
-	Strength = E;
+	damage = 0;
 	Dexterity = D;
 	Arcane = B;
+	Strength = None;
+}
+
+void AHuntersPistol::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	UpdateDamage();
 }

@@ -78,8 +78,8 @@ void APlayerCharacterController::BeginPlay()
 		playerHud->AddToPlayerScreen();
 	}
 
-	AddEquipment("LeftHandSocket", leftHandEquipment);
-	AddEquipment("RightHandSocket", rightHandEquipment);
+	secondaryWeapon = AddEquipment("LeftHandSocket", leftHandEquipment);
+	primaryWeapon = AddEquipment("RightHandSocket", rightHandEquipment);
 }
 
 void APlayerCharacterController::EndPlay(const EEndPlayReason::Type EndPlayReason)

@@ -15,6 +15,8 @@ class PROJECT_MONSTERS_API AHuntersPistol : public AEquipment
 	GENERATED_BODY()
 
 	AHuntersPistol();
+protected:
+	virtual void BeginPlay() override;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

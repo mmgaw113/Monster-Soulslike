@@ -9,6 +9,7 @@
 UENUM(BlueprintType)
 enum EScaling
 {
+	None,
 	S,
 	A,
 	B,
@@ -24,12 +25,7 @@ class PROJECT_MONSTERS_API AEquipment : public AActor
 
 public:
 	AEquipment();
-
-protected:
-	virtual void BeginPlay() override;
-
-public:
-	virtual void Tick(float DeltaTime) override;
+	void UpdateDamage();
 
 	USkeletalMeshComponent* mesh;
 

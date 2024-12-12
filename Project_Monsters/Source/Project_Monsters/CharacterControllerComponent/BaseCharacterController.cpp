@@ -24,17 +24,18 @@ ABaseCharacterController::ABaseCharacterController()
 	arcaneLevel = 1;
 }
 
-void ABaseCharacterController::AddEquipment(FName SocketName, UClass* Equipment) const
+AEquipment* ABaseCharacterController::AddEquipment(FName SocketName, UClass* Equipment) const
 {
 	FActorSpawnParameters spawnInfo;
 	FAttachmentTransformRules transformRules = FAttachmentTransformRules::SnapToTargetIncludingScale;
 	auto equipmentItem = GetWorld()->SpawnActor<AEquipment>(Equipment, GetMesh()->GetSocketLocation(SocketName),
-	                                                        GetMesh()->GetSocketRotation(SocketName), spawnInfo);
-
+	                                                        GetMesh()->GetSocketRotation(SocketName), spawnInfo);	
 	if (equipmentItem)
 	{
 		equipmentItem->AttachToComponent(GetMesh(), transformRules, SocketName);
 	}
+	
+	return equipmentItem;
 }
 
 UAbilitySystemComponent* ABaseCharacterController::GetAbilitySystemComponent() const
@@ -311,7 +312,7 @@ int32 ABaseCharacterController::GetMaxBloodVials() const
 	return attributes->GetMaxBloodVials();
 }
 
-int32 ABaseCharacterController::CalculateDamageOutput(TEnumAsByte<EScaling> Strength, TEnumAsByte<EScaling> Dexterity, TEnumAsByte<EScaling> Arcane)
+int ABaseCharacterController::CalculateStrengthOutput(TEnumAsByte<EScaling> Strength)
 {
 	if (!attributes)
 	{
@@ -319,11 +320,15 @@ int32 ABaseCharacterController::CalculateDamageOutput(TEnumAsByte<EScaling> Stre
 	}
 
 	int strengthValue = 0;
-	int dexterityValue = 0;
-	int arcaneValue = 0;
 	
 	switch (Strength)
 	{
+		default:
+			strengthValue = strengthLevel * 0;
+			break;
+		case None:
+			strengthValue = strengthLevel * 0;
+			break;
 		case S:
 			strengthValue = strengthLevel * 3;
 			break;
@@ -344,51 +349,77 @@ int32 ABaseCharacterController::CalculateDamageOutput(TEnumAsByte<EScaling> Stre
 			break;
 	}
 
+	return strengthValue;
+}
+
+int ABaseCharacterController::CalculateDexterityOutput(TEnumAsByte<EScaling> Dexterity)
+{
+	int dexterityValue = 0;
+	
 	switch (Dexterity)
 	{
-		case S:
-			dexterityValue = dexterityLevel * 3;
-			break;
-		case A:
-			dexterityValue = dexterityLevel * 2;
-			break;
-		case B:
-			dexterityValue = dexterityLevel * 1.5f;
-			break;
-		case C:
-			dexterityValue = dexterityLevel * 1;
-			break;
-		case D:
-			dexterityValue = dexterityLevel * 0.75f;
-			break;
-		case E:
-			dexterityValue = dexterityLevel * 0.5f;
-			break;
+	default:
+		dexterityValue = dexterityLevel * 0;
+		break;
+	case None:
+		dexterityValue = dexterityLevel * 0;
+		break;
+	case S:
+		dexterityValue = dexterityLevel * 3;
+		break;
+	case A:
+		dexterityValue = dexterityLevel * 2;
+		break;
+	case B:
+		dexterityValue = dexterityLevel * 1.5f;
+		break;
+	case C:
+		dexterityValue = dexterityLevel * 1;
+		break;
+	case D:
+		dexterityValue = dexterityLevel * 0.75f;
+		break;
+	case E:
+		dexterityValue = dexterityLevel * 0.5f;
+		break;
 	}
+
+	return dexterityValue;
+}
+
+int ABaseCharacterController::CalculateArcaneOutput(TEnumAsByte<EScaling> Arcane)
+{
+	int arcaneValue = 0;
 
 	switch (Arcane)
 	{
-		case S:
-			arcaneValue = arcaneLevel * 3;
-			break;
-		case A:
-			arcaneValue = arcaneLevel * 2;
-			break;
-		case B:
-			arcaneValue = arcaneLevel * 1.5f;
-			break;
-		case C:
-			arcaneValue = arcaneLevel * 1;
-			break;
-		case D:
-			arcaneValue = arcaneLevel * 0.75f;
-			break;
-		case E:
-			arcaneValue = arcaneLevel * 0.5f;
-			break;
+	default:
+		arcaneValue = arcaneLevel * 0;
+		break;
+	case None:
+		arcaneValue = arcaneLevel * 0;
+		break;
+	case S:
+		arcaneValue = arcaneLevel * 3;
+		break;
+	case A:
+		arcaneValue = arcaneLevel * 2;
+		break;
+	case B:
+		arcaneValue = arcaneLevel * 1.5f;
+		break;
+	case C:
+		arcaneValue = arcaneLevel * 1;
+		break;
+	case D:
+		arcaneValue = arcaneLevel * 0.75f;
+		break;
+	case E:
+		arcaneValue = arcaneLevel * 0.5f;
+		break;
 	}
 
-	return strengthValue + dexterityValue + arcaneValue;
+	return arcaneValue;
 }
 
 int32 ABaseCharacterController::CalculateMaxHealth(int Vigor) const

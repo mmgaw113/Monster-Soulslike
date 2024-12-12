@@ -19,7 +19,7 @@ class PROJECT_MONSTERS_API ABaseCharacterController : public ACharacter, public 
 
 public:
 	ABaseCharacterController();
-	void AddEquipment(FName SocketName, UClass* Equipment) const;
+	AEquipment* AddEquipment(FName SocketName, UClass* Equipment) const;
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
@@ -69,7 +69,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetMaxBloodVials() const;
 
-	virtual int32 CalculateDamageOutput(TEnumAsByte<EScaling> Strength, TEnumAsByte<EScaling> Dexterity, TEnumAsByte<EScaling> Arcane);
+	virtual int CalculateStrengthOutput(TEnumAsByte<EScaling> Strength);
+	virtual int CalculateDexterityOutput(TEnumAsByte<EScaling> Dexterity);
+	virtual int CalculateArcaneOutput(TEnumAsByte<EScaling> Arcane);
+
 	virtual int32 CalculateMaxHealth(int Vigor) const;
 	virtual int32 CalculateMaxStamina(int Endurance) const;
 
