@@ -55,6 +55,7 @@ void ABaseCharacterController::PossessedBy(AController* NewController)
 	SetTestAbilities();
 	SetAttributeValues();
 	SetMeleeAbility();
+	SetJumpMeleeAbility();
 }
 
 void ABaseCharacterController::OnRep_PlayerState()
@@ -164,6 +165,16 @@ bool ABaseCharacterController::ActivateMeleeAbility(bool AllowRemoteActivation)
 	}
 	
 	return abilitySystemComponent->TryActivateAbility(meleeAbilitySpecHandle, AllowRemoteActivation);
+}
+
+bool ABaseCharacterController::ActivateJumpMeleeAbility(bool AllowRemoteActivation)
+{
+	if (!abilitySystemComponent && !jumpMeleeAbilitySpecHandle.IsValid())
+	{
+		return false;;
+	}
+	
+	return abilitySystemComponent->TryActivateAbility(jumpMeleeAbilitySpecHandle, AllowRemoteActivation);
 }
 
 int32 ABaseCharacterController::GetCharacterLevel()
@@ -504,6 +515,17 @@ void ABaseCharacterController::SetMeleeAbility()
 	}
 
 	meleeAbilitySpecHandle = abilitySystemComponent->GiveAbility(FGameplayAbilitySpec(meleeAbility, strengthLevel, INDEX_NONE, this));
+}
+
+void ABaseCharacterController::SetJumpMeleeAbility()
+{
+	if (!abilitySystemComponent)
+	{
+		return;
+	}
+
+	jumpMeleeAbilitySpecHandle = abilitySystemComponent->GiveAbility(FGameplayAbilitySpec(jumpMeleeAbility, strengthLevel, INDEX_NONE, this));
+
 }
 
 void ABaseCharacterController::SetTestAbilities()

@@ -5,7 +5,7 @@
 
 UScytheAttack::UScytheAttack()
 {
-	MontageToPlay = LoadObject<UAnimMontage>(nullptr, TEXT("/Script/Engine.AnimMontage'/Game/Animations/MixamoAnimations/Animations/MM_sword_and_shield_attack__2__Montage.MM_sword_and_shield_attack__2__Montage'"));
+	MontageToPlay = LoadObject<UAnimMontage>(nullptr, TEXT("/Script/Engine.AnimMontage'/Game/Animations/Attacks/AM_sword_and_shield_attack__2__Montage.AM_sword_and_shield_attack__2__Montage'"));
 }
 
 void UScytheAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

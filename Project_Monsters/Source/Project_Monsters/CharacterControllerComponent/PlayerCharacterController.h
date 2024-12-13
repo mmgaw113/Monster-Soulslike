@@ -55,6 +55,7 @@ private:
 	FTimerHandle dodgerTimer;
 	FTimerHandle staminaTimerHandle;
 	FVector2d MovementVector;
+	bool isFalling;
 	bool isMoving;
 	bool isMovingRight;
 	bool dodgeBackward;
@@ -106,6 +107,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
 	UInputAction* dodgeAction = LoadObject<UInputAction>(
 		nullptr, TEXT("/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_Dodge.IA_Dodge'"));;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
+	UInputAction* heavyAttackAction = LoadObject<UInputAction>(
+		nullptr, TEXT(
+			"/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_HeavyAttack.IA_HeavyAttack'"));
+
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
 	UCameraComponent* cameraComponent;
@@ -124,6 +130,7 @@ private:
 	UAnimMontage* dodgeMontage;
 	
 	void Attack();
+	void HeavyAttack();
 	void Dodge();
 	void Interact();
 	void Jumped(const FInputActionValue& Value);

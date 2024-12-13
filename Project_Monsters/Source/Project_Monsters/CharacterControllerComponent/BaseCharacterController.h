@@ -37,6 +37,8 @@ public:
 	void OnDeath();
 	UFUNCTION(BlueprintCallable)
 	bool ActivateMeleeAbility(bool AllowRemoteActivation);
+	UFUNCTION(BlueprintCallable)
+	bool ActivateJumpMeleeAbility(bool AllowRemoteActivation);
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	virtual int32 GetCharacterLevel();
@@ -127,11 +129,16 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Attributes | Melee")
 	TSubclassOf<UGameplayAbility> meleeAbility;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Attributes | Melee")
+	TSubclassOf<UGameplayAbility> jumpMeleeAbility;
 
 	UPROPERTY()
 	FGameplayAbilitySpecHandle meleeAbilitySpecHandle;
+	UPROPERTY()
+	FGameplayAbilitySpecHandle jumpMeleeAbilitySpecHandle;
 
 	virtual void SetMeleeAbility();
+	virtual void SetJumpMeleeAbility();
 	
 	virtual void SetTestAbilities();
 };

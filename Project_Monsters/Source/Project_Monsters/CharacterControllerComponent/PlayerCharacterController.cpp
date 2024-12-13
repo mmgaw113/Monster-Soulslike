@@ -99,7 +99,7 @@ void APlayerCharacterController::EndPlay(const EEndPlayReason::Type EndPlayReaso
 void APlayerCharacterController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
 	MovingForward(MovementVector.Y);
 	MovingRight(MovementVector.X);
 }
@@ -146,23 +146,60 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 		// Melee and Perry
 		EnhancedInputComponent->BindAction(meleeAction, ETriggerEvent::Started, this,
 		                                   &APlayerCharacterController::Attack);
+		EnhancedInputComponent->BindAction(heavyAttackAction, ETriggerEvent::Started, this,
+		                                   &APlayerCharacterController::HeavyAttack);
 	}
 }
 
 void APlayerCharacterController::Attack()
 {
-	if (stamina > 20.0f)
+	if (stamina > 10.0f)
 	{
-		stamina -= 20.0f;
-		UpdateStaminaBar();
-		ActivateMeleeAbility(true);
-		primaryWeight = 0.0f;
-		secondaryWeight = 0.0f;
+		if (isFalling)
+		{
+			stamina -= 10.0f;
+			UpdateStaminaBar();
+			ActivateJumpMeleeAbility(true);
+			primaryWeight = 0.0f;
+			secondaryWeight = 0.0f;
+		}
+		else
+		{
+			stamina -= 10.0f;
+			UpdateStaminaBar();
+			ActivateMeleeAbility(true);
+			primaryWeight = 0.0f;
+			secondaryWeight = 0.0f;
+		}
 
 		if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 		{
 			GetWorldTimerManager().ClearTimer(staminaTimerHandle);
 		}
+	}
+}
+
+void APlayerCharacterController::HeavyAttack()
+{
+	if (stamina < 20.0f)
+	{
+		return;
+	}
+
+	if (isFalling)
+	{
+		return;
+	}
+	
+	stamina -= 20.0f;
+	UpdateStaminaBar();
+	ActivateMeleeAbility(true);
+	primaryWeight = 0.0f;
+	secondaryWeight = 0.0f;
+
+	if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(staminaTimerHandle);
 	}
 }
 
@@ -259,6 +296,8 @@ void APlayerCharacterController::Jumped(const FInputActionValue& Value)
 	if (stamina > 15.0f)
 	{
 		stamina -= 15.0f;
+		UpdateStaminaBar();
+		isFalling = true;
 		Jump();
 
 		if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
@@ -270,6 +309,8 @@ void APlayerCharacterController::Jumped(const FInputActionValue& Value)
 
 void APlayerCharacterController::Landed(const FHitResult& Hit)
 {
+	isFalling = false;
+
 	if (!GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 	{
 		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
