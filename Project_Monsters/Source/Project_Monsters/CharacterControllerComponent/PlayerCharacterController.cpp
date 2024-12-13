@@ -2,13 +2,18 @@
 
 
 #include "PlayerCharacterController.h"
+
+#include <string>
+
 #include "Blueprint/UserWidget.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
+#include "InputState.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/InputDeviceSubsystem.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
@@ -62,6 +67,8 @@ void APlayerCharacterController::BeginPlay()
 	stamina = CalculateMaxStamina(enduranceLevel);
 	maxStamina = CalculateMaxStamina(enduranceLevel);
 
+	UsingGamepad();
+
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
@@ -96,6 +103,11 @@ void APlayerCharacterController::EndPlay(const EEndPlayReason::Type EndPlayReaso
 void APlayerCharacterController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red,
+	                                 FString::SanitizeFloat(MovementVector.X) + ", " + FString::SanitizeFloat(
+		                                 MovementVector.Y));
+
 	MovingForward(MovementVector.Y);
 	MovingRight(MovementVector.X);
 }
@@ -169,8 +181,10 @@ void APlayerCharacterController::Dodge()
 		return;
 	}
 
-	stamina -= 20.0f;
-	UpdateStaminaBar();
+	if (dodging)
+	{
+		return;
+	}
 
 	if (dodgeForward)
 	{
@@ -230,6 +244,8 @@ void APlayerCharacterController::Dodge()
 	}
 
 	PlayAnimMontage(dodgeMontage);
+	stamina -= 20.0f;
+	UpdateStaminaBar();
 }
 
 void APlayerCharacterController::AttackFinished()
@@ -242,6 +258,11 @@ void APlayerCharacterController::AttackFinished()
 		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
 		                                true);
 	}
+}
+
+bool APlayerCharacterController::CanTakeDamage()
+{
+	return dodging;
 }
 
 void APlayerCharacterController::Jumped(const FInputActionValue& Value)
@@ -282,6 +303,11 @@ void APlayerCharacterController::CreateLevelUpScreen()
 void APlayerCharacterController::OnJump()
 {
 	UpdateStaminaBar();
+}
+
+void APlayerCharacterController::ResetDodge()
+{
+	dodging = false;
 }
 
 void APlayerCharacterController::Landed()
@@ -378,46 +404,94 @@ void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
 
 void APlayerCharacterController::MovingForward(float Value)
 {
-	if (Value > 0.0)
+	if (UsingGamepad())
 	{
-		isMoving = true;
-		dodgeForward = true;
-		dodgeBackward = false;
-	}
-	else if (Value < 0.0)
-	{
-		isMoving = true;
-		dodgeBackward = true;
-		dodgeForward = false;
+		if (Value > 25)
+		{
+			isMoving = true;
+			dodgeForward = true;
+			dodgeBackward = false;
+		}
+		else if (Value < -25)
+		{
+			isMoving = true;
+			dodgeBackward = true;
+			dodgeForward = false;
+		}
+		else
+		{
+			isMoving = false;
+			dodgeForward = false;
+			dodgeBackward = false;
+		}
 	}
 	else
 	{
-		isMoving = false;
-		dodgeForward = false;
-		dodgeBackward = false;
+		if (Value > 0)
+		{
+			isMoving = true;
+			dodgeForward = true;
+			dodgeBackward = false;
+		}
+		else if (Value < 0)
+		{
+			isMoving = true;
+			dodgeBackward = true;
+			dodgeForward = false;
+		}
+		else
+		{
+			isMoving = false;
+			dodgeForward = false;
+			dodgeBackward = false;
+		}
 	}
 }
 
 
 void APlayerCharacterController::MovingRight(float Value)
 {
-	if (Value > 0.0)
+	if (UsingGamepad())
 	{
-		isMovingRight = true;
-		dodgeRight = true;
-		dodgeLeft = false;
-	}
-	else if (Value < 0.0)
-	{
-		isMovingRight = true;
-		dodgeLeft = true;
-		dodgeRight = false;
+		if (Value > 25)
+		{
+			isMovingRight = true;
+			dodgeRight = true;
+			dodgeLeft = false;
+		}
+		else if (Value < -25)
+		{
+			isMovingRight = true;
+			dodgeLeft = true;
+			dodgeRight = false;
+		}
+		else
+		{
+			isMovingRight = false;
+			dodgeLeft = false;
+			dodgeRight = false;
+		}
 	}
 	else
 	{
-		isMovingRight = false;
-		dodgeLeft = false;
-		dodgeRight = false;
+		if (Value > 0)
+		{
+			isMovingRight = true;
+			dodgeRight = true;
+			dodgeLeft = false;
+		}
+		else if (Value < 0)
+		{
+			isMovingRight = true;
+			dodgeLeft = true;
+			dodgeRight = false;
+		}
+		else
+		{
+			isMovingRight = false;
+			dodgeLeft = false;
+			dodgeRight = false;
+		}
 	}
 }
 
@@ -430,6 +504,20 @@ void APlayerCharacterController::ResetMovementVector()
 	dodgeRight = false;
 	dodgeForward = false;
 	dodgeBackward = false;
+}
+
+bool APlayerCharacterController::UsingGamepad()
+{
+	UInputDeviceSubsystem* InputDeviceSubsystem = GetGameInstance()->GetEngine()->GetEngineSubsystem<
+		UInputDeviceSubsystem>();
+
+	if (InputDeviceSubsystem->GetMostRecentlyUsedHardwareDevice(GetPlatformUserId()).PrimaryDeviceType ==
+		EHardwareDevicePrimaryType::Gamepad)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 void APlayerCharacterController::RechargeStamina()

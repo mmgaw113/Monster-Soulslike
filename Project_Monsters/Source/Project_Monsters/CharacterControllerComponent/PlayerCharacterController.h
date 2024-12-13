@@ -134,16 +134,24 @@ private:
 	void MovingForward(float Value);
 	void MovingRight(float Value);
 	void ResetMovementVector();
+
+	bool UsingGamepad();
 	
 	UFUNCTION(BlueprintCallable)
 	void AttackFinished();
 
 	UFUNCTION(BlueprintCallable)
+	bool CanTakeDamage();
+	
+	UFUNCTION(BlueprintCallable)
 	void Landed();
 	
 	UFUNCTION(BlueprintCallable)
 	void OnJump();
-
+	
+	UFUNCTION(BlueprintCallable)
+	void ResetDodge();
+	
 	UFUNCTION(BlueprintCallable)
 	void UpdateHealthBar() const;
 
