@@ -28,6 +28,9 @@ protected:
 	virtual void Landed(const FHitResult& Hit) override;
 
 public:
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	bool dodging;
+	
 	void CreateLevelUpScreen();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -49,6 +52,7 @@ public:
 	AEquipment* secondaryWeapon;
 	
 private:
+	FTimerHandle dodgerTimer;
 	FTimerHandle staminaTimerHandle;
 	FVector2d MovementVector;
 	bool isMoving;
@@ -57,7 +61,6 @@ private:
 	bool dodgeForward;
 	bool dodgeLeft;
 	bool dodgeRight;
-	bool dodging;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Player Stats", meta=(AllowPrivateAccess=true))
 	UTheHuntGameInstance* gameInstance;

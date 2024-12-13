@@ -2,14 +2,10 @@
 
 
 #include "PlayerCharacterController.h"
-
-#include <string>
-
 #include "Blueprint/UserWidget.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
-#include "InputState.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -103,11 +99,7 @@ void APlayerCharacterController::EndPlay(const EEndPlayReason::Type EndPlayReaso
 void APlayerCharacterController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red,
-	                                 FString::SanitizeFloat(MovementVector.X) + ", " + FString::SanitizeFloat(
-		                                 MovementVector.Y));
-
+	
 	MovingForward(MovementVector.Y);
 	MovingRight(MovementVector.X);
 }
@@ -188,7 +180,6 @@ void APlayerCharacterController::Dodge()
 
 	if (dodgeForward)
 	{
-		dodging = true;
 		if (dodgeRight)
 		{
 			dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
@@ -207,7 +198,6 @@ void APlayerCharacterController::Dodge()
 	}
 	else if (dodgeBackward)
 	{
-		dodging = true;
 		if (dodgeRight)
 		{
 			dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
@@ -226,26 +216,25 @@ void APlayerCharacterController::Dodge()
 	}
 	else if (dodgeLeft)
 	{
-		dodging = true;
 		dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
 			                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_RollLeft_Root_Montage.AM_RollLeft_Root_Montage'"));
 	}
 	else if (dodgeRight)
 	{
-		dodging = true;
 		dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
 			                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_RollRight_Root_Montage.AM_RollRight_Root_Montage'"));
 	}
 	else if (!isMoving && !isMovingRight)
 	{
-		dodging = true;
 		dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
 			                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_DodgeBackward_Root_Montage.AM_DodgeBackward_Root_Montage'"));
 	}
 
+	dodging = true;
 	PlayAnimMontage(dodgeMontage);
 	stamina -= 20.0f;
 	UpdateStaminaBar();
+	GetWorldTimerManager().SetTimer(dodgerTimer, this, &APlayerCharacterController::ResetDodge, 0.3f, false);
 }
 
 void APlayerCharacterController::AttackFinished()
@@ -256,7 +245,7 @@ void APlayerCharacterController::AttackFinished()
 	if (!GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 	{
 		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
-		                                true);
+		                                true, 0.5f);
 	}
 }
 
@@ -284,7 +273,7 @@ void APlayerCharacterController::Landed(const FHitResult& Hit)
 	if (!GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 	{
 		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
-		                                true);
+		                                true, 0.5f);
 	}
 }
 
@@ -308,6 +297,11 @@ void APlayerCharacterController::OnJump()
 void APlayerCharacterController::ResetDodge()
 {
 	dodging = false;
+
+	if (GetWorldTimerManager().IsTimerActive(dodgerTimer))
+	{
+		GetWorldTimerManager().ClearTimer(dodgerTimer);
+	}
 }
 
 void APlayerCharacterController::Landed()
@@ -398,7 +392,7 @@ void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
 	else if (!Sprinting && !ReachedZero)
 	{
 		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
-		                                true);
+		                                true, 0.5f);
 	}
 }
 
