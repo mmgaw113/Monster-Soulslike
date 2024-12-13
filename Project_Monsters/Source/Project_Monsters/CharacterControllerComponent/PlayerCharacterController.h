@@ -28,6 +28,9 @@ protected:
 	virtual void Landed(const FHitResult& Hit) override;
 
 public:
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	bool dodging;
+	
 	void CreateLevelUpScreen();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -49,7 +52,15 @@ public:
 	AEquipment* secondaryWeapon;
 	
 private:
+	FTimerHandle dodgerTimer;
 	FTimerHandle staminaTimerHandle;
+	FVector2d MovementVector;
+	bool isMoving;
+	bool isMovingRight;
+	bool dodgeBackward;
+	bool dodgeForward;
+	bool dodgeLeft;
+	bool dodgeRight;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Player Stats", meta=(AllowPrivateAccess=true))
 	UTheHuntGameInstance* gameInstance;
@@ -92,7 +103,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
 	UInputAction* sprintAction = LoadObject<UInputAction>(
 		nullptr, TEXT("/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_Sprint.IA_Sprint'"));;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Input", meta=(AllowPrivateAccess=true))
+	UInputAction* dodgeAction = LoadObject<UInputAction>(
+		nullptr, TEXT("/Script/EnhancedInput.InputAction'/Game/PlayerController/Input/Actions/IA_Dodge.IA_Dodge'"));;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
 	UCameraComponent* cameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
@@ -107,7 +121,10 @@ private:
 	TSubclassOf<AEquipment> rightHandEquipment = LoadObject<UClass>(
 		nullptr, TEXT("/Script/Engine.Blueprint'/Game/Blueprints/Weapons/bp_Sickle_C.bp_Sickle_C'"));
 
+	UAnimMontage* dodgeMontage;
+	
 	void Attack();
+	void Dodge();
 	void Interact();
 	void Jumped(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -117,15 +134,27 @@ private:
 	void StopSprint();
 	void Stamina(bool Sprinting, bool ReachedZero);
 
+	void MovingForward(float Value);
+	void MovingRight(float Value);
+	void ResetMovementVector();
+
+	bool UsingGamepad();
+	
 	UFUNCTION(BlueprintCallable)
 	void AttackFinished();
 
+	UFUNCTION(BlueprintCallable)
+	bool CanTakeDamage();
+	
 	UFUNCTION(BlueprintCallable)
 	void Landed();
 	
 	UFUNCTION(BlueprintCallable)
 	void OnJump();
-
+	
+	UFUNCTION(BlueprintCallable)
+	void ResetDodge();
+	
 	UFUNCTION(BlueprintCallable)
 	void UpdateHealthBar() const;
 

@@ -9,6 +9,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/InputDeviceSubsystem.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Project_Monsters/UserInterface/PlayerHud.h"
 #include "Project_Monsters/Components/TargetingComponent.h"
@@ -62,6 +63,8 @@ void APlayerCharacterController::BeginPlay()
 	stamina = CalculateMaxStamina(enduranceLevel);
 	maxStamina = CalculateMaxStamina(enduranceLevel);
 
+	UsingGamepad();
+
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
@@ -96,6 +99,9 @@ void APlayerCharacterController::EndPlay(const EEndPlayReason::Type EndPlayReaso
 void APlayerCharacterController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	MovingForward(MovementVector.Y);
+	MovingRight(MovementVector.X);
 }
 
 void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -107,6 +113,10 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 		// Basic Movement
 		EnhancedInputComponent->BindAction(moveAction, ETriggerEvent::Triggered, this,
 		                                   &APlayerCharacterController::Move);
+		EnhancedInputComponent->BindAction(moveAction, ETriggerEvent::Canceled, this,
+		                                   &APlayerCharacterController::ResetMovementVector);
+		EnhancedInputComponent->BindAction(moveAction, ETriggerEvent::Completed, this,
+		                                   &APlayerCharacterController::ResetMovementVector);
 		EnhancedInputComponent->BindAction(lookAction, ETriggerEvent::Triggered, this,
 		                                   &APlayerCharacterController::Look);
 		EnhancedInputComponent->BindAction(sprintAction, ETriggerEvent::Triggered, this,
@@ -119,7 +129,8 @@ void APlayerCharacterController::SetupPlayerInputComponent(UInputComponent* Play
 		                                   &APlayerCharacterController::Jumped);
 		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(jumpAction, ETriggerEvent::Canceled, this, &ACharacter::StopJumping);
-
+		EnhancedInputComponent->BindAction(dodgeAction, ETriggerEvent::Completed, this,
+		                                   &APlayerCharacterController::Dodge);
 		// Interact
 		EnhancedInputComponent->BindAction(interactAction, ETriggerEvent::Started, this,
 		                                   &APlayerCharacterController::Interact);
@@ -147,24 +158,100 @@ void APlayerCharacterController::Attack()
 		ActivateMeleeAbility(true);
 		primaryWeight = 0.0f;
 		secondaryWeight = 0.0f;
-		
+
 		if (GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 		{
 			GetWorldTimerManager().ClearTimer(staminaTimerHandle);
 		}
-	}	
+	}
+}
+
+void APlayerCharacterController::Dodge()
+{
+	if (stamina < 20)
+	{
+		return;
+	}
+
+	if (dodging)
+	{
+		return;
+	}
+
+	if (dodgeForward)
+	{
+		if (dodgeRight)
+		{
+			dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
+				                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_RollForwardRight_Root_Montage.AM_RollForwardRight_Root_Montage'"));
+		}
+		else if (dodgeLeft)
+		{
+			dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
+				                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_RollForwardLeft_Root_Montage.AM_RollForwardLeft_Root_Montage'"));
+		}
+		else
+		{
+			dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
+				                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_RollForward_Root_Montage.AM_RollForward_Root_Montage'"));
+		}
+	}
+	else if (dodgeBackward)
+	{
+		if (dodgeRight)
+		{
+			dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
+				                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_RollBackwardRight_Root_Montage.AM_RollBackwardRight_Root_Montage'"));
+		}
+		else if (dodgeLeft)
+		{
+			dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
+				                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_RollBackwardLeft_Root_Montage.AM_RollBackwardLeft_Root_Montage'"));
+		}
+		else
+		{
+			dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
+				                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_RollBackward_Root_Montage.AM_RollBackward_Root_Montage'"));
+		}
+	}
+	else if (dodgeLeft)
+	{
+		dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
+			                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_RollLeft_Root_Montage.AM_RollLeft_Root_Montage'"));
+	}
+	else if (dodgeRight)
+	{
+		dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
+			                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_RollRight_Root_Montage.AM_RollRight_Root_Montage'"));
+	}
+	else if (!isMoving && !isMovingRight)
+	{
+		dodgeMontage = LoadObject<UAnimMontage>(nullptr, TEXT(
+			                                        "/Script/Engine.AnimMontage'/Game/Animations/DodgeAndRoll/AM_DodgeBackward_Root_Montage.AM_DodgeBackward_Root_Montage'"));
+	}
+
+	dodging = true;
+	PlayAnimMontage(dodgeMontage);
+	stamina -= 20.0f;
+	UpdateStaminaBar();
+	GetWorldTimerManager().SetTimer(dodgerTimer, this, &APlayerCharacterController::ResetDodge, 0.3f, false);
 }
 
 void APlayerCharacterController::AttackFinished()
 {
 	primaryWeight = 1.0f;
 	secondaryWeight = 1.0f;
-	
+
 	if (!GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 	{
 		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
-										true);
+		                                true, 0.5f);
 	}
+}
+
+bool APlayerCharacterController::CanTakeDamage()
+{
+	return dodging;
 }
 
 void APlayerCharacterController::Jumped(const FInputActionValue& Value)
@@ -186,7 +273,7 @@ void APlayerCharacterController::Landed(const FHitResult& Hit)
 	if (!GetWorldTimerManager().IsTimerActive(staminaTimerHandle))
 	{
 		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
-		                                true);
+		                                true, 0.5f);
 	}
 }
 
@@ -207,6 +294,16 @@ void APlayerCharacterController::OnJump()
 	UpdateStaminaBar();
 }
 
+void APlayerCharacterController::ResetDodge()
+{
+	dodging = false;
+
+	if (GetWorldTimerManager().IsTimerActive(dodgerTimer))
+	{
+		GetWorldTimerManager().ClearTimer(dodgerTimer);
+	}
+}
+
 void APlayerCharacterController::Landed()
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.0, FColor::Cyan, TEXT("Landed"));
@@ -225,7 +322,7 @@ void APlayerCharacterController::Look(const FInputActionValue& Value)
 
 void APlayerCharacterController::Move(const FInputActionValue& Value)
 {
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
@@ -295,8 +392,126 @@ void APlayerCharacterController::Stamina(bool Sprinting, bool ReachedZero)
 	else if (!Sprinting && !ReachedZero)
 	{
 		GetWorldTimerManager().SetTimer(staminaTimerHandle, this, &APlayerCharacterController::RechargeStamina, 0.01f,
-		                                true);
+		                                true, 0.5f);
 	}
+}
+
+void APlayerCharacterController::MovingForward(float Value)
+{
+	if (UsingGamepad())
+	{
+		if (Value > 25)
+		{
+			isMoving = true;
+			dodgeForward = true;
+			dodgeBackward = false;
+		}
+		else if (Value < -25)
+		{
+			isMoving = true;
+			dodgeBackward = true;
+			dodgeForward = false;
+		}
+		else
+		{
+			isMoving = false;
+			dodgeForward = false;
+			dodgeBackward = false;
+		}
+	}
+	else
+	{
+		if (Value > 0)
+		{
+			isMoving = true;
+			dodgeForward = true;
+			dodgeBackward = false;
+		}
+		else if (Value < 0)
+		{
+			isMoving = true;
+			dodgeBackward = true;
+			dodgeForward = false;
+		}
+		else
+		{
+			isMoving = false;
+			dodgeForward = false;
+			dodgeBackward = false;
+		}
+	}
+}
+
+
+void APlayerCharacterController::MovingRight(float Value)
+{
+	if (UsingGamepad())
+	{
+		if (Value > 25)
+		{
+			isMovingRight = true;
+			dodgeRight = true;
+			dodgeLeft = false;
+		}
+		else if (Value < -25)
+		{
+			isMovingRight = true;
+			dodgeLeft = true;
+			dodgeRight = false;
+		}
+		else
+		{
+			isMovingRight = false;
+			dodgeLeft = false;
+			dodgeRight = false;
+		}
+	}
+	else
+	{
+		if (Value > 0)
+		{
+			isMovingRight = true;
+			dodgeRight = true;
+			dodgeLeft = false;
+		}
+		else if (Value < 0)
+		{
+			isMovingRight = true;
+			dodgeLeft = true;
+			dodgeRight = false;
+		}
+		else
+		{
+			isMovingRight = false;
+			dodgeLeft = false;
+			dodgeRight = false;
+		}
+	}
+}
+
+void APlayerCharacterController::ResetMovementVector()
+{
+	MovementVector = FVector2D(0, 0);
+	isMoving = false;
+	isMovingRight = false;
+	dodgeLeft = false;
+	dodgeRight = false;
+	dodgeForward = false;
+	dodgeBackward = false;
+}
+
+bool APlayerCharacterController::UsingGamepad()
+{
+	UInputDeviceSubsystem* InputDeviceSubsystem = GetGameInstance()->GetEngine()->GetEngineSubsystem<
+		UInputDeviceSubsystem>();
+
+	if (InputDeviceSubsystem->GetMostRecentlyUsedHardwareDevice(GetPlatformUserId()).PrimaryDeviceType ==
+		EHardwareDevicePrimaryType::Gamepad)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 void APlayerCharacterController::RechargeStamina()
